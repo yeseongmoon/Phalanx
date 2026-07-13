@@ -1,0 +1,640 @@
+==============================================================================
+  6G NTN THREAT MODELING  --  Algorithm 1 (ENISA x SPARTA) RESULT REPORT
+  tuple: TR = <L, S, A, TB, E, Pre, TTP, CM, I, Conf>
+  input: enisa_threats_tuple.xlsx
+==============================================================================
+
+SUMMARY
+------------------------------------------------------------------------------
+  threat records processed .......... 58
+  adversarial (TTP arm, R1/R5) ......  39   -> SPARTA mapping applies
+  non-adversarial (TTP = N/A) .......  19   -> state/failure/env/legal (R2/R3/R4)
+  multi-segment footprint (R9) ......  31   -> bridging sub-chain within one record
+  multi-lifecycle (R10) .............  54
+  Pass-1 S-derivation consistent .... 58/58
+  by ENISA category (E) ............. DIS:2, EIH:8, FM:5, LEG:6, LEI:2, NAA:23, OUT:2, PA:6, UD:4
+
+PER-THREAT RESULTS
+==============================================================================
+[TR01]  Atmospheric hazards
+     E (category)  : DIS   CIA: A   nature: physical/environmental
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R4, R7, R9, R10   (primary R4)
+             TTP   : N/A (by rule R4)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR02]  Environmental hazards
+     E (category)  : DIS   CIA: A   nature: physical/environmental
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R4, R7, R9, R10   (primary R4)
+             TTP   : N/A (by rule R4)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR03]  Failure to maintain information systems
+     E (category)  : LEI   CIA: CIA   nature: enabling/legacy
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch}
+     Pass 2  rules : R5, R6, R7, R8, R10   (primary R5)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 3 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR04]  Legacy software
+     E (category)  : LEI   CIA: CIA   nature: enabling/legacy
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R5, R6, R7, R8, R9, R10   (primary R5)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR05]  Personnel absence
+     E (category)  : OUT   CIA: A   nature: state/outage
+     Pass 1  S     : {Human Resources}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R3, R7, R10   (primary R3)
+             TTP   : N/A (by rule R3)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             flag  : R3 state -> record as enabling precondition; adversarial pair is a separate record
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR06]  Security services failure
+     E (category)  : OUT   CIA: A   nature: state/outage
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {6:Operations}
+     Pass 2  rules : R3, R7   (primary R3)
+             TTP   : N/A (by rule R3)
+             flag  : R3 state -> record as enabling precondition; adversarial pair is a separate record
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR07]  Lack of segregation
+     E (category)  : UD   CIA: CIA   nature: operational/unintentional
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR08]  Operating errors
+     E (category)  : UD   CIA: IA   nature: operational/unintentional
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR09]  Software misconfiguration
+     E (category)  : UD   CIA: CIA   nature: operational/unintentional
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R9, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR10]  Inadequate security planning/management
+     E (category)  : UD   CIA: CIA   nature: operational/unintentional
+     Pass 1  S     : {User, Ground, Space, Human Resources}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link); Human Resources <-> technical segment (organizational boundary)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R9, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space/Human Resources
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR11]  Failure of air conditioning or water supply
+     E (category)  : FM   CIA: A   nature: operational/unintentional
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {6:Operations}
+     Pass 2  rules : R2, R7   (primary R2)
+             TTP   : N/A (by rule R2)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR12]  Failure of Cloud infrastructure
+     E (category)  : FM   CIA: A   nature: operational/unintentional
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R9, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR13]  Failure of communication networks
+     E (category)  : FM   CIA: A   nature: operational/unintentional
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R9, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR14]  Failure of power supply
+     E (category)  : FM   CIA: A   nature: operational/unintentional
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R9, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR15]  Rogue hardware
+     E (category)  : FM   CIA: CI   nature: operational/unintentional
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R2, R7, R10   (primary R2)
+             TTP   : N/A (by rule R2)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR16]  Coercion, extortion, or corruption
+     E (category)  : PA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Human Resources}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR17]  Damage/Destruction of segment assets
+     E (category)  : PA   CIA: A   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR18]  Damage/Destruction of the satellite via the use of ASAT
+     E (category)  : PA   CIA: A   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR19]  Loss during shipping
+     E (category)  : PA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {6:Operations}
+     Pass 2  rules : R1, R6, R7, R8   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR20]  Sabotage through hardware/software
+     E (category)  : PA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR21]  Unauthorized phyisical access
+     E (category)  : PA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR22]  Data leaks
+     E (category)  : LEG   CIA: CIA   nature: legal
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch}
+     Pass 2  rules : R7, R10   (primary --)
+             TTP   : N/A (by rule --)
+             flag  : R10 multi-lifecycle -> L spans 3 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR23]  misuse of equipment
+     E (category)  : LEG   CIA: CIA   nature: legal
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R7, R10   (primary --)
+             TTP   : N/A (by rule --)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR24]  Negligence of asset handling security requirements
+     E (category)  : LEG   CIA: CIA   nature: legal
+     Pass 1  S     : {Human Resources}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R7, R10   (primary --)
+             TTP   : N/A (by rule --)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR25]  Refusal of actions
+     E (category)  : LEG   CIA: CIA   nature: legal
+     Pass 1  S     : {User, Ground, Space, Human Resources}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link); Human Resources <-> technical segment (organizational boundary)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R7, R9, R10   (primary --)
+             TTP   : N/A (by rule --)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space/Human Resources
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR26]  Third Party non-compliance (supply chain)
+     E (category)  : LEG   CIA: C   nature: legal
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R7, R9, R10   (primary --)
+             TTP   : N/A (by rule --)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR27]  Unauthorized access to recycled or disposed media
+     E (category)  : LEG   CIA: C   nature: legal
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R7, R10   (primary --)
+             TTP   : N/A (by rule --)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=--
+
+[TR28]  Hijacking
+     E (category)  : EIH   CIA: IA   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR29]  Interception of communication
+     E (category)  : EIH   CIA: C   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR30]  Man-in-the-Middle
+     E (category)  : EIH   CIA: CIA   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR31]  Network manipulation (Bus-Payload Link)
+     E (category)  : EIH   CIA: CI   nature: adversarial
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR32]  Network traffic manipulation (TC)
+     E (category)  : EIH   CIA: A   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR33]  Position detection (telemetry)
+     E (category)  : EIH   CIA: C   nature: adversarial
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR34]  Replay of recorded authentic communication traffic
+     E (category)  : EIH   CIA: CI   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR35]  Unauthorized access
+     E (category)  : EIH   CIA: CI   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR36]  Abuse of leaked data
+     E (category)  : NAA   CIA: C   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 3 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR37]  Abuse/Falsification of rights
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {User, Ground}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR38]  Compromising confidential information (data breaches): Exfiltration
+     E (category)  : NAA   CIA: C   nature: adversarial
+     Pass 1  S     : {User, Ground}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link)
+             L     : {6:Operations}
+     Pass 2  rules : R1, R6, R7, R8, R9   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR39]  Data Modification
+     E (category)  : NAA   CIA: CI   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 3 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR40]  Denial of Service (DoS)
+     E (category)  : NAA   CIA: A   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR41]  Electromagnetic interference
+     E (category)  : NAA   CIA: IA   nature: adversarial
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR42]  Firmware corruption
+     E (category)  : NAA   CIA: A   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR43]  Identity Theft
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Human Resources}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR44]  Jamming
+     E (category)  : NAA   CIA: A   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR45]  Malicious code/software/activity: Cryptographic exploit
+     E (category)  : NAA   CIA: C   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR46]  Malicious code/software/activity: Malicious injection
+     E (category)  : NAA   CIA: IA   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR47]  Malicious code/software/activity: Network exploit
+     E (category)  : NAA   CIA: A   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR48]  Malicious code/software/activity: Software and vulnerability exploit
+     E (category)  : NAA   CIA: CI   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR49]  Manipulation of hardware and software: Zero-Day exploit
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR50]  Preventing services
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR51]  Resource exhaustion
+     E (category)  : NAA   CIA: A   nature: adversarial
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR52]  Seizure of control
+     E (category)  : NAA   CIA: A   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR53]  Social Engineering
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR54]  Spoofing
+     E (category)  : NAA   CIA: AI   nature: adversarial
+     Pass 1  S     : {User, Ground, Space}   [OK derived from A]
+             TB    : User <-> Ground/RAN (service link); Ground <-> Space (feeder / telecommand link); User <-> Space (direct service link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across User/Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR55]  Supply Chain Compromise
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR56]  Theft of authentication information
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground, Space}   [OK derived from A]
+             TB    : Ground <-> Space (feeder / telecommand link)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R9, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R9 multi-segment -> emit bridging sub-chain IA->EX/LM->IMP across Ground/Space
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR57]  Unauthorized modification: Parameters
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Space}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 5 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+[TR58]  Unauthorized use of equipment
+     E (category)  : NAA   CIA: CIA   nature: adversarial
+     Pass 1  S     : {Ground}   [OK derived from A]
+             TB    : (none - single segment / internal)
+             L     : {1:Design and Development, 2:Assembly, 3:Pre-launch, 4:Launch, 5:In-orbit Testing, 6:Operations, 7:Decommissioning}
+     Pass 2  rules : R1, R6, R7, R8, R10   (primary R1)
+             TTP   : PENDING (analyst to map SPARTA TTPs)
+             flag  : R10 multi-lifecycle -> L spans 7 phases (split only if TTP/CM differ)
+             CM/I/Conf : CM=PENDING  I=PENDING  Conf=PENDING
+
+POST-PASS  (Algorithm 1, lines 20-21)
+------------------------------------------------------------------------------
+  * Attack-path chaining (line 20): links records where a post-condition
+    satisfies another record's precondition. Requires the analyst's Pre/TTP
+    fields -> run again after SPARTA mapping to materialize multi-stage paths.
+  * Coverage audit (line 21): every (asset, phase) with an ENISA lifecycle
+    entry should be covered by >=1 record; gaps feed the evaluation (sec. 8.2).
+
+NEXT STEP
+------------------------------------------------------------------------------
+  Fill Pre / TTP / CM / I / Conf for the 39 adversarial records (SPARTA v3.2),
+  then re-run: the report will show MAPPED TTPs, CM crosswalks, and chained paths.
+==============================================================================

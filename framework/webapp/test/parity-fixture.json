@@ -1,0 +1,1551 @@
+{
+ "TR01": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R4",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "physical/environmental",
+  "arm": "N/A",
+  "prim": "R4",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR02": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R4",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "physical/environmental",
+  "arm": "N/A",
+  "prim": "R4",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR03": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3
+  ],
+  "rules": [
+   "R5",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "enabling/legacy",
+  "arm": "SPARTA",
+  "prim": "R5",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR04": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R5",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "enabling/legacy",
+  "arm": "SPARTA",
+  "prim": "R5",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR05": {
+  "segs": [
+   "Human Resources"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R3",
+   "R7",
+   "R10"
+  ],
+  "nature": "state/outage",
+  "arm": "N/A",
+  "prim": "R3",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR06": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   6
+  ],
+  "rules": [
+   "R3",
+   "R7"
+  ],
+  "nature": "state/outage",
+  "arm": "N/A",
+  "prim": "R3",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR07": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR08": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR09": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR10": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space",
+   "Human Resources"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)",
+   "Human Resources <-> technical segment (organizational boundary)"
+  ]
+ },
+ "TR11": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   6
+  ],
+  "rules": [
+   "R2",
+   "R7"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR12": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR13": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR14": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR15": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R2",
+   "R7",
+   "R10"
+  ],
+  "nature": "operational/unintentional",
+  "arm": "N/A",
+  "prim": "R2",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR16": {
+  "segs": [
+   "Human Resources"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR17": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR18": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR19": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR20": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR21": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR22": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3
+  ],
+  "rules": [
+   "R7",
+   "R10"
+  ],
+  "nature": "legal",
+  "arm": "N/A",
+  "prim": "--",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR23": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R7",
+   "R10"
+  ],
+  "nature": "legal",
+  "arm": "N/A",
+  "prim": "--",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR24": {
+  "segs": [
+   "Human Resources"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R7",
+   "R10"
+  ],
+  "nature": "legal",
+  "arm": "N/A",
+  "prim": "--",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR25": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space",
+   "Human Resources"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "legal",
+  "arm": "N/A",
+  "prim": "--",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)",
+   "Human Resources <-> technical segment (organizational boundary)"
+  ]
+ },
+ "TR26": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R7",
+   "R9",
+   "R10"
+  ],
+  "nature": "legal",
+  "arm": "N/A",
+  "prim": "--",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR27": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R7",
+   "R10"
+  ],
+  "nature": "legal",
+  "arm": "N/A",
+  "prim": "--",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR28": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR29": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR30": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR31": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR32": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR33": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR34": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR35": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR36": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR37": {
+  "segs": [
+   "User",
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)"
+  ]
+ },
+ "TR38": {
+  "segs": [
+   "User",
+   "Ground"
+  ],
+  "L": [
+   6
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)"
+  ]
+ },
+ "TR39": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR40": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR41": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR42": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR43": {
+  "segs": [
+   "Human Resources"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR44": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR45": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR46": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR47": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR48": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR49": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR50": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR51": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR52": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR53": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR54": {
+  "segs": [
+   "User",
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "User <-> Ground/RAN (service link)",
+   "Ground <-> Space (feeder / telecommand link)",
+   "User <-> Space (direct service link)"
+  ]
+ },
+ "TR55": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR56": {
+  "segs": [
+   "Ground",
+   "Space"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R9",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "Ground <-> Space (feeder / telecommand link)"
+  ]
+ },
+ "TR57": {
+  "segs": [
+   "Space"
+  ],
+  "L": [
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ },
+ "TR58": {
+  "segs": [
+   "Ground"
+  ],
+  "L": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rules": [
+   "R1",
+   "R6",
+   "R7",
+   "R8",
+   "R10"
+  ],
+  "nature": "adversarial",
+  "arm": "SPARTA",
+  "prim": "R1",
+  "tb": [
+   "(none - single segment / internal)"
+  ]
+ }
+}

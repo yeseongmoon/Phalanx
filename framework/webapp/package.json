@@ -1,0 +1,29 @@
+{
+  "name": "ntn-threat-flow",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "6G NTN Threat-Flow Builder — React + TS front-end over the ENISA×SPARTA Algorithm 1 engine",
+  "scripts": {
+    "gen": "python3 scripts/gen_data.py",
+    "gen:sparta": "python3 scripts/gen_sparta.py",
+    "gen:enisa": "python3 scripts/gen_enisa_controls.py",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.5.4",
+    "vite": "^7.3.6",
+    "vitest": "^3.2.7"
+  }
+}
