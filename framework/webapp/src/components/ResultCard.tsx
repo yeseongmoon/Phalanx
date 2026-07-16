@@ -23,6 +23,10 @@ export function ResultCard({
   return (
     <div className="card">
       <button className="xbtn" title="Close result" onClick={(e) => { e.stopPropagation(); onClose() }}>×</button>
+      <div className="readhead">
+        <span className="rh-l"><span className="rh-dot" /> THREAT RECORD · {threat.id}</span>
+        <span className="rh-r">{result.nature}</span>
+      </div>
       <div className="cbody">
         {/* top-5 elements (A, E, TTP, S, CM) carry unique accent colors; the rest are muted */}
         <div className="f minor"><span className="k">L</span><span className="v">{phasesStr(result.L)}</span></div>
