@@ -6,7 +6,7 @@ import threatsData from './data/threats.json'
 import { TopBar } from './components/TopBar'
 import { TooltipLayer } from './components/Tooltip'
 import { Architecture } from './components/Architecture'
-import { Builder, type NewThreat } from './components/Builder'
+import { Builder, type NewThreat, type BuilderState } from './components/Builder'
 import { ThreatList } from './components/ThreatList'
 
 const SEED = threatsData as Threat[]
@@ -17,7 +17,12 @@ export default function App() {
   const [filter, setFilter] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [showAdd, setShowAdd] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [dirty, setDirty] = useState(false)                 // unsaved custom-threat changes since last export
+  const [confirm, setConfirm] = useState<null | { msg: string; run: () => void }>(null)
   const custom = useRef(0)
+  // structured builder state per custom threat, in memory only (for lossless Edit) — not a DB
+  const formStore = useRef<Map<string, BuilderState>>(new Map())
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // When a threat is expanded, center its card in the panel. The card opens
@@ -36,6 +41,14 @@ export default function App() {
     return () => cancelAnimationFrame(raf)
   }, [selectedId])
 
+  // warn on tab close / reload while there are unsaved custom threats (browser shows its generic prompt)
+  useEffect(() => {
+    if (!dirty) return
+    const h = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', h)
+    return () => window.removeEventListener('beforeunload', h)
+  }, [dirty])
+
   const results = useMemo(() => new Map(threats.map((t) => [t.id, runOne(t)])), [threats])
   const cats = useMemo(() => [...new Set(threats.map((t) => t.E))], [threats])
 
@@ -48,37 +61,68 @@ export default function App() {
   )
   const advCount = threats.filter((t) => !results.get(t.id)!.arm.startsWith('N/A')).length
   const nadvCount = threats.length - advCount
-  const customCount = threats.filter((t) => t.custom).length
 
   const addThreat = (n: NewThreat) => {
     custom.current += 1
+    const id = 'C' + custom.current
     const t: Threat = {
-      id: 'C' + custom.current, cluster: n.cluster, name: n.name,
+      id, cluster: n.cluster, name: n.name,
       E: CLUSTER2E[n.cluster] || '?', cia: n.cia, A: n.A,
       desc: n.desc || '(analyst-added threat)', note: 'custom', custom: true,
       pre: n.pre || undefined, ttp: n.ttp || undefined, cm: n.cm || undefined,
       impact: n.impact || undefined, conf: n.conf || undefined,
     }
+    if (n.form) formStore.current.set(id, n.form)
     setThreats((prev) => [...prev, t])   // append to the existing list
-    setFilter(null); setQuery(''); setSelectedId(t.id)
+    setFilter(null); setQuery(''); setSelectedId(id); setDirty(true)
+  }
+  const updateThreat = (id: string, n: NewThreat) => {
+    if (n.form) formStore.current.set(id, n.form)
+    setThreats((prev) => prev.map((t) => (t.id === id ? {
+      ...t, cluster: n.cluster, name: n.name, E: CLUSTER2E[n.cluster] || '?', cia: n.cia, A: n.A,
+      desc: n.desc || '(analyst-added threat)',
+      pre: n.pre || undefined, ttp: n.ttp || undefined, cm: n.cm || undefined,
+      impact: n.impact || undefined, conf: n.conf || undefined,
+    } : t)))
+    setEditingId(null); setSelectedId(id); setDirty(true)
+  }
+  const editThreat = (id: string) => {
+    setEditingId(id); setShowAdd(true); setSelectedId(null)
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const removeThreat = (id: string) => {
-    setThreats((prev) => prev.filter((t) => t.id !== id))
+    const next = threats.filter((t) => t.id !== id)
+    setThreats(next)
+    formStore.current.delete(id)
     if (selectedId === id) setSelectedId(null)
+    if (editingId === id) setEditingId(null)
+    setDirty(next.some((t) => t.custom))   // unsaved only while custom threats still remain
+  }
+  // gate a destructive action (reset / load) behind a Save-first prompt when there are unsaved custom threats
+  const guardDestructive = (run: () => void, what: string) => {
+    const n = threats.filter((t) => t.custom).length
+    if (dirty && n > 0) setConfirm({ msg: `You have ${n} unsaved custom threat${n > 1 ? 's' : ''}, which ${what} will discard.`, run })
+    else run()
   }
   const onLoadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
-    if (f) loadCSV(f)
+    if (f) guardDestructive(() => loadCSV(f), 'loading a new CSV')
     e.target.value = ''
   }
-  const exportCSV = () => download('enisa_threats_tuple_export.csv', threatsToCSV(threats, runOne))
+  const exportCSV = () => { download('enisa_threats_tuple_export.csv', threatsToCSV(threats, runOne)); setDirty(false) }
   const loadCSV = (file: File) => {
     const rd = new FileReader()
     rd.onload = () => {
       try {
         const loaded = rowsToThreats(parseCSV(String(rd.result).replace(/^﻿/, '')))
         if (!loaded.length) throw new Error('no threats parsed')
-        custom.current = 0
+        // recognise analyst-added rows (C-ids) as custom, and continue the counter past the highest one
+        let maxC = 0
+        for (const t of loaded) {
+          const m = /^C(\d+)$/i.exec(t.id.trim())
+          if (m) { t.custom = true; maxC = Math.max(maxC, Number(m[1])) }
+        }
+        custom.current = maxC; formStore.current.clear(); setEditingId(null); setDirty(false)
         setThreats(loaded); setSelectedId(null); setFilter(null); setQuery('')
       } catch (err) {
         alert('Could not load CSV: ' + (err as Error).message +
@@ -88,7 +132,7 @@ export default function App() {
     rd.readAsText(file)
   }
   const reset = () => {
-    custom.current = 0
+    custom.current = 0; formStore.current.clear(); setEditingId(null); setDirty(false)
     setThreats(SEED); setSelectedId(null); setFilter(null); setQuery('')
   }
 
@@ -120,18 +164,22 @@ export default function App() {
               <div className="stile rec"><div className="n num">{threats.length}</div><div className="l">records</div></div>
               <div className="stile adv"><div className="n num">{advCount}</div><div className="l">adversarial</div></div>
               <div className="stile nadv"><div className="n num">{nadvCount}</div><div className="l">non-adversarial</div></div>
-              <div className="stile cst"><div className="n num">{customCount}</div><div className="l">custom</div></div>
             </div>
 
             <button type="button" className={'collapse-h' + (showAdd ? ' open' : '')}
-              onClick={() => setShowAdd((v) => !v)} aria-expanded={showAdd}>
-              <span className="plus">+</span> Add a new threat
+              onClick={() => { if (showAdd && editingId) setEditingId(null); setShowAdd((v) => !v) }} aria-expanded={showAdd}>
+              <span className="plus">+</span> {editingId ? `Editing threat ${editingId}` : 'Add a new threat'}
               <span className="chev">▸</span>
             </button>
-            {showAdd && <div className="add-body"><Builder onAdd={addThreat} /></div>}
+            {showAdd && <div className="add-body">
+              <Builder key={editingId ?? 'new'} editing={!!editingId}
+                initial={editingId ? formStore.current.get(editingId) : undefined}
+                onCancel={() => setEditingId(null)}
+                onSubmit={editingId ? (t) => updateThreat(editingId!, t) : addThreat} />
+            </div>}
 
-            <button className="btn exp" type="button" onClick={exportCSV}>⭳ Export to CSV (opens in Excel)</button>
-            <button className="btn ghost" type="button" onClick={reset}>Reset to ENISA database</button>
+            <button className="btn exp" type="button" onClick={exportCSV}>⭳ Export to CSV (opens in Excel){dirty && <span className="unsaved"> · unsaved</span>}</button>
+            <button className="btn ghost" type="button" onClick={() => guardDestructive(reset, 'resetting to the ENISA database')}>Reset to ENISA database</button>
 
             <div className="sechd">Threats</div>
             <input className="search" placeholder="Search threats…" autoComplete="off"
@@ -150,12 +198,26 @@ export default function App() {
             ) : (
               <ThreatList
                 items={items} results={results} selectedId={selectedId}
-                onSelect={(id) => setSelectedId(id)} onClose={() => setSelectedId(null)} onRemove={removeThreat}
+                onSelect={(id) => setSelectedId(id)} onClose={() => setSelectedId(null)} onRemove={removeThreat} onEdit={editThreat}
               />
             )}
           </div>
         </div>
       </div>
+
+      {confirm && (
+        <div className="modal-back" onClick={() => setConfirm(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-t">Unsaved custom threats</div>
+            <div className="modal-b">{confirm.msg} Save them to CSV first?</div>
+            <div className="modal-acts">
+              <button className="btn" onClick={() => { const r = confirm.run; exportCSV(); setConfirm(null); r() }}>💾 Save &amp; continue</button>
+              <button className="btn ghost danger" onClick={() => { const r = confirm.run; setConfirm(null); r() }}>Discard &amp; continue</button>
+              <button className="btn ghost" onClick={() => setConfirm(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

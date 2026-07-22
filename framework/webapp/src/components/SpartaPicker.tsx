@@ -27,8 +27,9 @@ export function SpartaPicker({
   const [q, setQ] = useState('')
   const [extra, setExtra] = useState('')
   const [active, setActive] = useState(0)   // highlighted option for keyboard nav
-  const [showAllE, setShowAllE] = useState(false)
+  const [eShow, setEShow] = useState(6)              // how many ENISA controls are revealed (rank order)
   const menuRef = useRef<HTMLDivElement>(null)
+  const eFieldRef = useRef<HTMLDivElement>(null)
 
   const matches = useMemo(() => {
     const s = q.trim().toLowerCase()
@@ -79,13 +80,16 @@ export function SpartaPicker({
       return a - b
     })
   }, [e, chosenThemes])
-  const shownE = showAllE ? eControls : eControls.slice(0, 6)
+  const shownE = eControls.slice(0, eShow)
+  // collapsing can leave the scroller past the new (shorter) bottom → snap the section back into view
+  const showLess = () => { setEShow(6); requestAnimationFrame(() => eFieldRef.current?.scrollIntoView({ block: 'nearest' })) }
   const toggleE = (i: number) => setEnisaSel(enisaSel.includes(i) ? enisaSel.filter((x) => x !== i) : [...enisaSel, i])
 
   const addTech = (id: string) => { if (!chain.includes(id)) setChain([...chain, id]); setQ('') }
   const rmTech = (id: string) => setChain(chain.filter((x) => x !== id))
   const toggleCm = (id: string) => setCmSel(cmSel.includes(id) ? cmSel.filter((x) => x !== id) : [...cmSel, id])
   const addAll = () => setCmSel([...new Set([...cmSel, ...suggestions])])
+  const clearAll = () => setCmSel(cmSel.filter((id) => !suggestions.includes(id)))
   const addExtra = () => {
     const v = extra.trim()
     if (v && !cmExtra.includes(v)) setCmExtra([...cmExtra, v])
@@ -96,6 +100,7 @@ export function SpartaPicker({
     <>
       <div className="field">
         <label>TTP — SPARTA technique chain</label>
+        <div className="hint chain-guide">Add <b>one technique per attack step</b> — each one you add becomes a link in the chain, in attacker order (Initial&nbsp;Access&nbsp;→&nbsp;Execution&nbsp;→&nbsp;…&nbsp;→&nbsp;Impact). Search and click to add.</div>
         <div className="tpick">
           <input className="tpick-in" value={q} placeholder="Search SPARTA techniques (ID or name)…"
             role="combobox" aria-expanded={matches.length > 0} aria-autocomplete="list"
@@ -115,19 +120,23 @@ export function SpartaPicker({
             </div>
           )}
         </div>
-        {chain.length > 0 && (
+        {chain.length > 0 ? (
           <div className="chain">
             {chain.map((id, i) => (
               <span key={id} className="chain-wrap">
                 {i > 0 && <span className="chain-arrow">→</span>}
                 <span className="chain-chip" title={TECHBY[id]?.name}>
+                  <span className="chain-step">{i + 1}</span>
+                  <span className="chain-tac">{TECHBY[id]?.tactic}</span>
                   {id}<span className="x" onClick={() => rmTech(id)}>×</span>
                 </span>
               </span>
             ))}
           </div>
+        ) : (
+          <div className="chain-empty">Your attack chain will build here — add techniques above.</div>
         )}
-        <div className="hint">Techniques in attacker order (Reconnaissance → … → Impact). {TECHS.length} techniques from SPARTA {sparta.meta.file.includes('v') ? sparta.meta.file.match(/v[\d.]+/)?.[0] : ''}.</div>
+        <div className="hint">{TECHS.length} techniques from SPARTA {sparta.meta.file.includes('v') ? sparta.meta.file.match(/v[\d.]+/)?.[0] : ''}.</div>
       </div>
 
       <div className="field">
@@ -136,7 +145,9 @@ export function SpartaPicker({
           <>
             <div className="cmsug-h">
               SPARTA maps {suggestions.length} countermeasure{suggestions.length > 1 ? 's' : ''} to your chain
-              <button type="button" className="cmsug-all" onClick={addAll}>+ add all</button>
+              {suggestions.every((id) => cmSel.includes(id))
+                ? <button type="button" className="cmsug-all clear" onClick={clearAll}>− clear all</button>
+                : <button type="button" className="cmsug-all" onClick={addAll}>+ add all</button>}
             </div>
             <div className="improw">
               {suggestions.map((id) => (
@@ -163,8 +174,8 @@ export function SpartaPicker({
           onBlur={addExtra} />
       </div>
 
-      <div className="field">
-        <label>ENISA controls {e && <span className="opt">— category {e} · {eControls.length} mapped</span>}</label>
+      <div className="field" ref={eFieldRef}>
+        <label>ENISA controls {e && <span className="opt">— category {e} · {eControls.length} mapped, ranked</span>}</label>
         {eControls.length === 0 ? (
           <div className="hint">No ENISA controls mapped to this category.</div>
         ) : (
@@ -187,12 +198,17 @@ export function SpartaPicker({
                 )
               })}
             </div>
-            {eControls.length > 6 && (
-              <button type="button" className="ectrl-more" onClick={() => setShowAllE((v) => !v)}>
-                {showAllE ? '− show less' : `+ show ${eControls.length - 6} more`}
-              </button>
-            )}
-            <div className="hint">Threat-mapped ENISA controls, each traceable to ISO / NIST / NIS2 / …  <b>⚡ TTP</b> = control theme overlaps a countermeasure your chosen techniques invoke.</div>
+            <div className="ectrl-morerow">
+              {eShow < eControls.length && (
+                <button type="button" className="ectrl-more" onClick={() => setEShow((n) => Math.min(n + 10, eControls.length))}>
+                  + show {Math.min(10, eControls.length - eShow)} more <span className="ectrl-more-n">· {eControls.length - eShow} of {eControls.length} hidden</span>
+                </button>
+              )}
+              {eShow > 6 && (
+                <button type="button" className="ectrl-more less" onClick={showLess}>− show less</button>
+              )}
+            </div>
+            <div className="hint">Ranked <b>TTP-relevant first</b>, then SPARTA-backed. Each traceable to ISO / NIST / NIS2 / …  <b>⚡ TTP</b> = control theme overlaps a countermeasure your chosen techniques invoke.</div>
           </>
         )}
       </div>

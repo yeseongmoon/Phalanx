@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { CLUSTER2E, runOne } from '../engine/algorithm'
 import { segKey, phasesStr } from '../engine/ui'
-import { ASSET_OPTIONS, PICK_SEGMENTS } from '../engine/architecture'
+import { ASSET_OPTIONS, PICK_SEGMENTS, type AssetGroup, type AssetOption } from '../engine/architecture'
 import { SpartaPicker } from './SpartaPicker'
 import enisaData from '../data/enisa_controls.json'
 
@@ -10,6 +10,7 @@ const ECONTROLS = enisaData.controls as { title: string }[]
 export interface NewThreat {
   name: string; cluster: string; A: string; cia: string; desc: string
   pre: string; ttp: string; cm: string; impact: string; conf: string
+  form?: BuilderState
 }
 
 type SegSel = { all: boolean; assets: string[] }
@@ -24,23 +25,38 @@ type CiaKey = typeof CIA_KEYS[number]
 const IMPACTS = ['Deception', 'Disruption', 'Denial', 'Degradation', 'Destruction', 'Theft']
 const CONFS = ['High', 'Medium', 'Low']
 
-export function Builder({ onAdd }: { onAdd: (t: NewThreat) => void }) {
-  const [name, setName] = useState('')
-  const [desc, setDesc] = useState('')
-  const [cluster, setCluster] = useState(Object.keys(CLUSTER2E)[0])
-  const [cia, setCia] = useState<Record<CiaKey, boolean>>({ C: false, I: false, A: false })
-  const [sel, setSel] = useState<Record<string, SegSel>>(emptySel)
+/** Raw builder form state, kept in memory (never persisted like a DB) so an analyst-added threat can
+ *  be re-opened and edited losslessly — the flat A/TTP/CM strings can't be round-tripped back to picks. */
+export interface BuilderState {
+  name: string; desc: string; cluster: string; cia: Record<CiaKey, boolean>
+  sel: Record<string, SegSel>; pre: string
+  chain: string[]; cmSel: string[]; enisaSel: number[]; cmExtra: string[]
+  impact: string[]; conf: string
+}
+
+export function Builder({ onSubmit, initial, editing = false, onCancel }: {
+  onSubmit: (t: NewThreat) => void
+  initial?: BuilderState
+  editing?: boolean
+  onCancel?: () => void
+}) {
+  const [name, setName] = useState(initial?.name ?? '')
+  const [desc, setDesc] = useState(initial?.desc ?? '')
+  const [cluster, setCluster] = useState(initial?.cluster ?? Object.keys(CLUSTER2E)[0])
+  const [cia, setCia] = useState<Record<CiaKey, boolean>>(initial?.cia ?? { C: false, I: false, A: false })
+  const [sel, setSel] = useState<Record<string, SegSel>>(initial?.sel ?? emptySel())
   const [draft, setDraft] = useState<Record<string, string>>(emptyDraft)
+  const [expanded, setExpanded] = useState<string | null>(null)   // the one open asset group (accordion — one at a time)
   // bridge: precondition (state→action)
-  const [pre, setPre] = useState('')
-  // SPARTA-mapping side (optional)
-  const [showMap, setShowMap] = useState(false)
-  const [chain, setChain] = useState<string[]>([])
-  const [cmSel, setCmSel] = useState<string[]>([])
-  const [enisaSel, setEnisaSel] = useState<number[]>([])
-  const [cmExtra, setCmExtra] = useState<string[]>([])
-  const [impact, setImpact] = useState<string[]>([])
-  const [conf, setConf] = useState('')
+  const [pre, setPre] = useState(initial?.pre ?? '')
+  // SPARTA-mapping side (optional) — open it if the edited threat already carries a mapping
+  const [showMap, setShowMap] = useState(!!initial && (initial.chain.length + initial.cmSel.length + initial.enisaSel.length + initial.cmExtra.length + initial.impact.length > 0))
+  const [chain, setChain] = useState<string[]>(initial?.chain ?? [])
+  const [cmSel, setCmSel] = useState<string[]>(initial?.cmSel ?? [])
+  const [enisaSel, setEnisaSel] = useState<number[]>(initial?.enisaSel ?? [])
+  const [cmExtra, setCmExtra] = useState<string[]>(initial?.cmExtra ?? [])
+  const [impact, setImpact] = useState<string[]>(initial?.impact ?? [])
+  const [conf, setConf] = useState(initial?.conf ?? '')
 
   const buildA = () => {
     const parts: string[] = []
@@ -62,17 +78,26 @@ export function Builder({ onAdd }: { onAdd: (t: NewThreat) => void }) {
     setImpact((cur) => (cur.includes(x) ? cur.filter((v) => v !== x) : [...cur, x]))
   const toggleAll = (seg: string) =>
     setSel((s) => ({ ...s, [seg]: { all: !s[seg].all, assets: [] } }))
-  const toggleAsset = (seg: string, token: string) =>
-    setSel((s) => {
-      const cur = s[seg]
-      if (cur.all) return s
-      const assets = cur.assets.includes(token)
-        ? cur.assets.filter((a) => a !== token)
-        : [...cur.assets, token]
-      return { ...s, [seg]: { ...cur, assets } }
-    })
   const removeAsset = (seg: string, token: string) =>
     setSel((s) => ({ ...s, [seg]: { ...s[seg], assets: s[seg].assets.filter((a) => a !== token) } }))
+  // toggle a single asset/sub-asset chip (free multi-select — the analyst picks whatever is relevant)
+  const toggleAsset = (seg: string, token: string) =>
+    setSel((s) => {
+      const cur = s[seg]; if (cur.all) return s
+      const assets = cur.assets.includes(token) ? cur.assets.filter((a) => a !== token) : [...cur.assets, token]
+      return { ...s, [seg]: { ...cur, assets } }
+    })
+  const toggleExpand = (seg: string, label: string) => setExpanded((e) => (e === seg + '|' + label ? null : seg + '|' + label))
+  // picking the whole asset clears (and, in the UI, disables) its sibling parts — the whole covers them
+  const selectWhole = (seg: string, g: AssetGroup, whole: AssetOption) =>
+    setSel((s) => {
+      const cur = s[seg]; if (cur.all) return s
+      const partToks = g.items.filter((it) => !it.whole).map((it) => it.token)
+      const assets = cur.assets.includes(whole.token)
+        ? cur.assets.filter((a) => a !== whole.token)
+        : [...cur.assets.filter((a) => !partToks.includes(a)), whole.token]
+      return { ...s, [seg]: { ...cur, assets } }
+    })
   const addOther = (seg: string) => {
     const v = draft[seg].trim()
     if (!v) return
@@ -82,7 +107,7 @@ export function Builder({ onAdd }: { onAdd: (t: NewThreat) => void }) {
 
   const resetForm = () => {
     setName(''); setDesc(''); setCluster(Object.keys(CLUSTER2E)[0]); setCia({ C: false, I: false, A: false })
-    setSel(emptySel()); setDraft(emptyDraft())
+    setSel(emptySel()); setDraft(emptyDraft()); setExpanded(null)
     setPre(''); setChain([]); setCmSel([]); setEnisaSel([]); setCmExtra([]); setImpact([]); setConf(''); setShowMap(false)
   }
 
@@ -90,13 +115,23 @@ export function Builder({ onAdd }: { onAdd: (t: NewThreat) => void }) {
     e.preventDefault()
     if (!name.trim()) return
     if (!A) { alert('Select at least one affected asset (or “All assets” for a segment).'); return }
-    onAdd({
+    // CM is dual-sourced — group by provenance with ONE label per source (not "ENISA:" per control):
+    //   SPARTA: <technique-mapped countermeasure IDs + free-text> · ENISA: <threat-mapped control titles>
+    const spartaCm = [...cmSel, ...cmExtra]
+    const enisaCm = enisaSel.map((i) => ECONTROLS[i].title)
+    const cm = [
+      spartaCm.length ? 'SPARTA: ' + spartaCm.join(', ') : '',
+      enisaCm.length ? 'ENISA: ' + enisaCm.join(', ') : '',
+    ].filter(Boolean).join('  ·  ')
+    // structured form kept for lossless edit round-trip (in memory only, not a DB)
+    const form: BuilderState = { name: name.trim(), desc: desc.trim(), cluster, cia, sel, pre: pre.trim(), chain, cmSel, enisaSel, cmExtra, impact, conf }
+    onSubmit({
       name: name.trim(), cluster, A, cia: ciaStr(), desc: desc.trim(),
       pre: pre.trim(), ttp: chain.join(' → '),
-      cm: [...cmSel, ...enisaSel.map((i) => 'ENISA: ' + ECONTROLS[i].title), ...cmExtra].join('; '),
-      impact: impact.join(', '), conf,
+      cm,
+      impact: impact.join(', '), conf, form,
     })
-    resetForm()
+    if (!editing) resetForm()
   }
 
   return (
@@ -139,29 +174,79 @@ export function Builder({ onAdd }: { onAdd: (t: NewThreat) => void }) {
               <div className="apick">
                 {PICK_SEGMENTS.map((seg) => {
                   const s = sel[seg]
-                  const opts = ASSET_OPTIONS[seg]
-                  const known = new Set(opts.map((o) => o.token))
+                  const groups = ASSET_OPTIONS[seg]
+                  const known = new Set(groups.flatMap((g) => g.items.map((it) => it.token)))
+                  if (!groups.length) known.add(seg)   // a segment with no sub-assets (HR) is a single self-named asset
                   const custom = s.assets.filter((a) => !known.has(a))
+                  // bucket consecutive groups by section so an opened group's panel lands below its whole
+                  // section's chips (keeps a row of boxes together instead of splitting it)
+                  const sections: { section?: string; groups: AssetGroup[] }[] = []
+                  for (const g of groups) {
+                    const last = sections[sections.length - 1]
+                    if (last && (last.section ?? '') === (g.section ?? '')) last.groups.push(g)
+                    else sections.push({ section: g.section, groups: [g] })
+                  }
                   return (
                     <div className="apick-seg" key={seg}>
                       <div className="apick-seg-h">
                         <span className={'apick-dot ' + segKey(seg)} />{seg}
+                        {groups.length > 0 && <button type="button" className={'achip all seg-all' + (s.all ? ' on' : '')} onClick={() => toggleAll(seg)}>All assets</button>}
                       </div>
                       <div className="apick-chips">
-                        <button type="button" className={'achip all' + (s.all ? ' on' : '')} onClick={() => toggleAll(seg)}>All assets</button>
-                        {opts.map((o) => (
-                          <button key={o.token} type="button" disabled={s.all}
-                            className={'achip' + (s.assets.includes(o.token) ? ' on' : '')}
-                            onClick={() => toggleAsset(seg, o.token)}>{o.label}</button>
-                        ))}
-                        {custom.map((c) => (
-                          <button key={c} type="button" className="achip on custom" onClick={() => removeAsset(seg, c)} title="Remove">{c} ×</button>
-                        ))}
-                        <input className="achip-input" placeholder="+ other…" disabled={s.all}
-                          value={draft[seg]} onChange={(e) => setDraft((d) => ({ ...d, [seg]: e.target.value }))}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addOther(seg) } }}
-                          onBlur={() => addOther(seg)} />
+                        {!groups.length && (
+                          <button type="button" disabled={s.all}
+                            className={'achip' + (s.assets.includes(seg) ? ' on' : '')}
+                            onClick={() => toggleAsset(seg, seg)}>{seg}</button>
+                        )}
+                        {sections.map((sec, si) => {
+                          const openG = sec.groups.find((g) => !s.all && expanded === seg + '|' + g.label)
+                          const wholeOn = openG ? openG.items.some((w) => w.whole && s.assets.includes(w.token)) : false
+                          return (
+                            <Fragment key={si}>
+                              {sec.section && <div className="apick-section">{sec.section}</div>}
+                              {sec.groups.map((g) => {
+                                const nsel = g.items.filter((it) => s.assets.includes(it.token)).length
+                                const isOpen = !s.all && expanded === seg + '|' + g.label
+                                return (
+                                  <button key={g.label} type="button" disabled={s.all} aria-expanded={isOpen}
+                                    className={'achip group' + (nsel > 0 ? ' on' : '') + (isOpen ? ' open' : '')}
+                                    onClick={() => toggleExpand(seg, g.label)}>
+                                    {g.label}
+                                    {nsel > 0 && <span className="achip-badge">{nsel}</span>}
+                                    <span className="achip-caret">▾</span>
+                                  </button>
+                                )
+                              })}
+                              {openG && (
+                                <div className="apick-sub">
+                                  <div className="apick-sub-h">{openG.label}</div>
+                                  <div className="apick-sub-chips">
+                                    {openG.items.map((it) => (
+                                      <button key={it.token} type="button" disabled={s.all || (!it.whole && wholeOn)}
+                                        className={'achip sub' + (s.assets.includes(it.token) ? ' on' : '')}
+                                        onClick={() => (it.whole ? selectWhole(seg, openG, it) : toggleAsset(seg, it.token))}>{it.label}</button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </Fragment>
+                          )
+                        })}
                       </div>
+                      {custom.length > 0 && (
+                        <div className="apick-group">
+                          <div className="apick-group-lab">Other (custom)</div>
+                          <div className="apick-group-chips">
+                            {custom.map((c) => (
+                              <button key={c} type="button" className="achip on custom" onClick={() => removeAsset(seg, c)} title="Remove">{c} ×</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <input className="achip-input other" placeholder="+ other asset (free text)…" disabled={s.all}
+                        value={draft[seg]} onChange={(e) => setDraft((d) => ({ ...d, [seg]: e.target.value }))}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addOther(seg) } }}
+                        onBlur={() => addOther(seg)} />
                     </div>
                   )
                 })}
@@ -229,8 +314,8 @@ export function Builder({ onAdd }: { onAdd: (t: NewThreat) => void }) {
         </div>
 
         <div className="builder-actions">
-          <button className="btn" type="submit">Run Algorithm 1 &amp; add</button>
-          <button className="btn ghost" type="button" onClick={resetForm}>Reset</button>
+          <button className="btn" type="submit">{editing ? 'Update threat' : 'Run Algorithm 1 & add'}</button>
+          <button className="btn ghost" type="button" onClick={editing ? onCancel : resetForm}>{editing ? 'Cancel' : 'Reset'}</button>
         </div>
     </form>
   )

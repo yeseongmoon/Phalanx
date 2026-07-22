@@ -133,32 +133,84 @@ export const SEG_VAR: Record<string, string> = {
 }
 
 /**
- * Options for the custom-threat builder's affected-asset picker.
- * `label` is shown on the chip; `token` is what goes into the A string — chosen so it
- * contains the keywords the engine uses (segment glow + lifecycle derivation).
+ * Options for the custom-threat builder's affected-asset picker. Assets are laid out FLAT, decomposed
+ * as specifically as possible and grouped only for readability; the analyst picks any combination.
+ * `label` is shown on the chip; `token` is what goes into the A string — every token deliberately
+ * contains one of a coarse node's `kw` keywords (see ASSETS above) so the specific asset still lights
+ * the right box on the scene. Nothing is invented — every entry is an ENISA STL asset name.
  */
-export interface AssetOption { label: string; token: string }
+export interface AssetOption { label: string; token: string; whole?: boolean }
+export interface AssetGroup { label: string; items: AssetOption[]; section?: string }
 export const PICK_SEGMENTS = ['User', 'Ground', 'Space', 'Human Resources'] as const
-export const ASSET_OPTIONS: Record<string, AssetOption[]> = {
+export const ASSET_OPTIONS: Record<string, AssetGroup[]> = {
   User: [
-    { label: 'Handheld UE', token: 'Handheld UE' },
-    { label: 'VSAT', token: 'VSAT' },
-    { label: 'IoT (NB-IoT-NTN)', token: 'IoT (NB-IoT-NTN)' },
+    { label: 'Terminals & devices', items: [
+      { label: 'Handheld UE', token: 'Handheld UE' },
+      { label: 'VSAT', token: 'VSAT' },
+      { label: 'IoT (NB-IoT-NTN)', token: 'IoT (NB-IoT-NTN)' },
+      { label: 'Consumer endpoint devices', token: 'Consumer endpoint devices' },
+      { label: 'Consumer interfaces', token: 'Consumer interfaces & devices' },
+    ] },
   ],
   Ground: [
-    { label: 'NTN Gateway / SAN', token: 'NTN Gateway / SAN' },
-    { label: 'TT&C (SLE/SDL)', token: 'TTC Ground (SLE/SDL)' },
-    { label: 'Satellite Control Centre', token: 'Satellite Control Centre' },
-    { label: '5G / 6G Core', token: '5G / 6G Core network' },
-    { label: 'Production / Assembly / Checkout', token: 'Production, Assembly, Checkout, Crypto, Simulators' },
+    { label: 'Gateway & access', items: [
+      { label: 'NTN Gateway', token: 'NTN Gateway' },
+      { label: 'SAN (Satellite Access Node)', token: 'SAN (Satellite Access Node)' },
+    ] },
+    { label: 'TT&C ground', items: [
+      { label: 'TT&C Ground', token: 'TT&C Ground' },
+      { label: 'SLE / SDL protocol', token: 'SLE/SDL protocol' },
+      { label: 'Antenna', token: 'TT&C Antenna' },
+    ] },
+    { label: 'Control centre', items: [
+      { label: 'Satellite Control Centre', token: 'Satellite Control Centre' },
+      { label: 'Operations Centre', token: 'Satellite Operations Centre' },
+      { label: 'Mission Control System', token: 'Mission Control System' },
+    ] },
+    { label: '5G / 6G Core', items: [
+      { label: 'Core network', token: '5G / 6G Core network' },
+      { label: 'WAN', token: 'WAN network' },
+      { label: 'MEC (Edge)', token: 'MEC (Edge)' },
+    ] },
+    { label: 'Production, test & logistics', items: [
+      { label: 'Manufacturing', token: 'Manufacturing systems' },
+      { label: 'Assembly', token: 'Assembly' },
+      { label: 'Design / Dev / QA', token: 'Design/dev/QA' },
+      { label: 'Simulators', token: 'Simulators' },
+      { label: 'Centralised Checkout Systems', token: 'Centralised Checkout Systems' },
+      { label: 'Test Tools', token: 'Soft/Hardware Test Tools' },
+      { label: 'EGSE / MGSE', token: 'EGSE / MGSE' },
+      { label: 'Document Management', token: 'Document Management System' },
+      { label: 'ERP software', token: 'ERP software' },
+      { label: 'Crypto HW/SW', token: 'Crypto Hardware/Software' },
+      { label: 'Transport Container', token: 'Transport Container' },
+    ] },
   ],
   Space: [
-    { label: 'Service satellite (gNB)', token: 'Service satellite (gNB-DU)' },
-    { label: 'Feeder satellite', token: 'Feeder satellite' },
-    { label: 'HAPS / UAS', token: 'HAPS / UAS' },
-    { label: 'BUS (CDHS/COM)', token: 'BUS (CDHS/COM)' },
-    { label: 'Payload (PDHS/PLCOM)', token: 'Payload (PDHS/PLCOM)' },
-    { label: 'EPS / AOCS / RTOS', token: 'EPS / AOCS / RTOS' },
+    { label: 'Platforms', section: 'Space & air platforms', items: [
+      { label: 'Service satellite (gNB)', token: 'Service satellite (gNB-DU)' },
+      { label: 'Feeder satellite', token: 'Feeder satellite' },
+      { label: 'HAPS', token: 'HAPS' },
+      { label: 'UAS / Drone', token: 'UAS / Drone' },
+    ] },
+    { label: 'Satellite BUS', section: 'On-board subsystems', items: [
+      { label: 'BUS (whole)', token: 'BUS (whole)', whole: true },
+      { label: 'CDHS', token: 'BUS (CDHS)' },
+      { label: 'COM', token: 'BUS (COM)' },
+    ] },
+    { label: 'Payload', section: 'On-board subsystems', items: [
+      { label: 'Payload (whole)', token: 'Payload (whole)', whole: true },
+      { label: 'PDHS', token: 'Payload (PDHS)' },
+      { label: 'PLCOM', token: 'Payload (PLCOM)' },
+      { label: 'UDHS', token: 'Payload (UDHS)' },
+    ] },
+    { label: 'Platform subsystems', section: 'On-board subsystems', items: [
+      { label: 'EPS (Solar Wings & Batteries)', token: 'EPS (Solar Wings & Batteries)' },
+      { label: 'AOCS', token: 'AOCS' },
+      { label: 'RTOS', token: 'RTOS' },
+      { label: 'OBSW', token: 'OBSW' },
+      { label: 'OBC', token: 'OBC' },
+    ] },
   ],
   'Human Resources': [],
 }
