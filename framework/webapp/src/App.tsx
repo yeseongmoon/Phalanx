@@ -74,7 +74,7 @@ export default function App() {
     }
     if (n.form) formStore.current.set(id, n.form)
     setThreats((prev) => [...prev, t])   // append to the existing list
-    setFilter(null); setQuery(''); setSelectedId(id); setDirty(true)
+    setFilter(null); setQuery(''); setSelectedId(id); setDirty(true); setShowAdd(false)   // collapse the builder
   }
   const updateThreat = (id: string, n: NewThreat) => {
     if (n.form) formStore.current.set(id, n.form)
