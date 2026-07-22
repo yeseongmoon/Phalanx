@@ -394,7 +394,7 @@ export function Architecture({ threat, result }: { threat: Threat | null; result
         <span><span className="msw" style={{ background: 'var(--ss)' }}></span>Space</span>
         <span><span className="msw" style={{ background: 'var(--sh)' }}></span>Human Resources</span>
         <span className="mdiv" aria-hidden="true"></span>
-        <span><span className="msline"></span>Physical link (service · feeder · TT&amp;C · ISL)</span>
+        <span><span className="msline"></span>Physical link</span>
         <span><span className="msw" style={{ background: 'var(--danger)' }}></span>Trust boundary crossed</span>
       </div>
     </div>
