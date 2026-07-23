@@ -8,11 +8,18 @@ import type { Threat } from '../src/engine/types'
 
 /** Smoke test: the whole component tree renders without throwing. */
 describe('App renders', () => {
-  it('renders the shell + architecture', () => {
-    const html = renderToStaticMarkup(<App />)
+  it('renders the shell + architecture (Threat Model view)', () => {
+    const html = renderToStaticMarkup(<App initialView="model" />)
     expect(html).toContain('Threat-Flow Builder')
     expect(html).toContain('id="seg-Space"')
     expect(html).toContain('SPACE / AIR SEGMENT')
+  })
+
+  it('lands on the Home page by default, with the three view tabs', () => {
+    const html = renderToStaticMarkup(<App />)
+    expect(html).toContain('role="tablist"')            // Home · Method Guide · Threat Model
+    expect(html).toContain('The gap it closes')          // Home landing content
+    expect(html).not.toContain('id="seg-Space"')         // the scene is behind the Threat Model tab
   })
 
   it('renders a selected threat with the right segments glowing', () => {

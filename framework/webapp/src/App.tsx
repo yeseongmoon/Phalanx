@@ -8,10 +8,20 @@ import { TooltipLayer } from './components/Tooltip'
 import { Architecture } from './components/Architecture'
 import { Builder, type NewThreat, type BuilderState } from './components/Builder'
 import { ThreatList } from './components/ThreatList'
+import { Home } from './components/Home'
+import { Guide } from './components/Guide'
 
 const SEED = threatsData as Threat[]
 
-export default function App() {
+type View = 'home' | 'guide' | 'model'
+const TABS: { id: View; label: string; icon: string }[] = [
+  { id: 'home', label: 'Home', icon: '◆' },
+  { id: 'guide', label: 'Method Guide', icon: '❏' },
+  { id: 'model', label: 'Threat Model', icon: '⌖' },
+]
+
+export default function App({ initialView = 'home' }: { initialView?: View } = {}) {
+  const [view, setView] = useState<View>(initialView)      // landing page is the front door
   const [threats, setThreats] = useState<Threat[]>(SEED)   // the 58 ENISA threats load by default
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filter, setFilter] = useState<string | null>(null)
@@ -140,7 +150,18 @@ export default function App() {
     <>
       <TooltipLayer />
       <TopBar />
-      <div className="app">
+      <nav className="tabs" role="tablist" aria-label="PHALANX views">
+        {TABS.map((t) => (
+          <button key={t.id} role="tab" aria-selected={view === t.id}
+            className={'tab' + (view === t.id ? ' on' : '')} onClick={() => setView(t.id)}>
+            <span className="ti" aria-hidden="true">{t.icon}</span>{t.label}
+          </button>
+        ))}
+      </nav>
+
+      {view === 'home' && <Home onNav={setView} />}
+      {view === 'guide' && <Guide />}
+      {view === 'model' && <div className="app">
         <div className="col mid">
           <div className="chead">
             <div className="t">6G NTN Reference Architecture</div>
@@ -203,7 +224,7 @@ export default function App() {
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {confirm && (
         <div className="modal-back" onClick={() => setConfirm(null)}>
