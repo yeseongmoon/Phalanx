@@ -97,7 +97,9 @@ body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-app
 .beam.active .base,.beam.active .flow{stroke:var(--signal)}
 /* ISL is ambient/decorative (not threat-modelled) — a lighter azure that never fully lights */
 .beam-isl .base,.beam-isl .flow{stroke:color-mix(in srgb,var(--ss) 55%,#a8c2ea)}
-.beam-isl .base{opacity:.08}.beam-isl .flow{opacity:.24;stroke-dasharray:5 6}
+/* dash period (14) must divide the flow keyframe's 28px shift, else the marching dashes snap
+   every loop (only the ISL had this — 5+6=11 ∤ 28 — which read as a laggy stutter) */
+.beam-isl .base{opacity:.08}.beam-isl .flow{opacity:.24;stroke-dasharray:5 9}
 .beam-isl.active .base{opacity:.12}.beam-isl.active .flow{opacity:.4;stroke-width:1.7}
 .beam-isl.active .base,.beam-isl.active .flow{stroke:color-mix(in srgb,var(--ss) 55%,#a8c2ea)}
 .beam-isl .beamlab{fill:color-mix(in srgb,var(--ss) 68%,#cfe0ff)}
