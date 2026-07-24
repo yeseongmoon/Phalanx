@@ -15,11 +15,20 @@ describe('App renders', () => {
     expect(html).toContain('SPACE / AIR SEGMENT')
   })
 
-  it('lands on the Home page by default, with the three view tabs', () => {
+  it('lands on the Home page by default, with the view tabs', () => {
     const html = renderToStaticMarkup(<App />)
-    expect(html).toContain('role="tablist"')            // Home · Method Guide · Threat Model
+    expect(html).toContain('role="tablist"')            // Home · Method Guide · Threat Model · Details
     expect(html).toContain('The gap it closes')          // Home landing content
     expect(html).not.toContain('id="seg-Space"')         // the scene is behind the Threat Model tab
+  })
+
+  it('renders the Details tab as a list with the mapped TR52 row (collapsed)', () => {
+    const html = renderToStaticMarkup(<App initialView="detail" />)
+    expect(html).toContain('Worked threat records')      // the Details page header
+    expect(html).toContain('drrow')                       // it is a list of collapsible rows
+    expect(html).toContain('Seizure of control')          // TR52's row summary
+    expect(html).toContain('4-step chain')                // the row's mapping summary
+    expect(html).not.toContain('Precondition')            // full dossier is behind the row (collapsed)
   })
 
   it('renders a selected threat with the right segments glowing', () => {

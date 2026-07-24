@@ -1,4 +1,4 @@
-import type { Threat, Result } from './types'
+import type { Threat, Result, Mapping } from './types'
 import { LIFE, ECAT } from './algorithm'
 
 function csvCell(s: unknown): string {
@@ -31,15 +31,18 @@ export function parseCSV(text: string): string[][] {
 export function threatsToCSV(threats: Threat[], run: (t: Threat) => Result): string {
   const H = ['ID', 'Threat cluster', 'ENISA_Threat', 'E (category)', 'CIA', 'L (lifecycle)',
     'S (segments)', 'A (affected assets)', 'TB (trust boundaries)', 'Pre', 'TTP', 'CM', 'I', 'Conf',
-    'Threat Description (ENISA)', 'Notes']
+    'Evidence', 'Threat Description (ENISA)', 'Notes', 'Mapping (JSON)']
   const lines = [H.map(csvCell).join(',')]
   for (const t of threats) {
     const r = run(t)
     const L = '{' + r.L.map((p) => p + ':' + LIFE[p]).join(',') + '}'
     lines.push([t.id, t.cluster, t.name, t.E + ' / ' + (ECAT[t.E] || ''), t.cia, L,
       r.segs.join('; '), t.A, r.tb.join(' ; '),
-      t.pre || '', t.ttp || '', t.cm || '', t.impact || '', t.conf || '', t.desc || '',
-      t.custom ? 'analyst-added' : (t.note || '')].map(csvCell).join(','))
+      t.pre || '', t.ttp || '', t.cm || '', t.impact || '', t.conf || '', t.evidence || '', t.desc || '',
+      t.custom ? 'analyst-added' : (t.note || ''),
+      // last column carries the structured Pass-2 record verbatim, so the rich Details view
+      // survives an export→load round-trip (the readable columns above are for humans/Excel)
+      t.map ? JSON.stringify(t.map) : ''].map(csvCell).join(','))
   }
   return '﻿' + lines.join('\r\n')
 }
@@ -50,10 +53,17 @@ export function rowsToThreats(rows: string[][]): Threat[] {
   const at = (n: string) => H.indexOf(n)
   const iId = at('ID'), iC = at('Threat cluster'), iN = at('ENISA_Threat'), iE = at('E (category)')
   const iCIA = at('CIA'), iA = at('A (affected assets)')
-  const iPre = at('Pre'), iTTP = at('TTP'), iCM = at('CM'), iI = at('I'), iConf = at('Conf')
+  const iPre = at('Pre'), iTTP = at('TTP'), iCM = at('CM'), iI = at('I'), iConf = at('Conf'), iEv = at('Evidence')
+  const iMap = at('Mapping (JSON)')
   const iD = H.findIndex((x) => x.startsWith('Threat Description'))
   if (iN < 0 || iA < 0) throw new Error('expected columns ENISA_Threat and A (affected assets)')
   const cell = (r: string[], i: number) => (i >= 0 ? (r[i] || '').trim() : '')
+  // restore the structured Pass-2 record from the JSON column (rich Details survive round-trips)
+  const parseMap = (r: string[]): Mapping | undefined => {
+    const s = cell(r, iMap)
+    if (!s) return undefined
+    try { const m = JSON.parse(s); return m && Array.isArray(m.ttp) ? m : undefined } catch { return undefined }
+  }
   return rows.slice(1)
     .filter((r) => r.length > 1 && (r[iN] || '').trim())
     .map((r, k) => ({
@@ -68,6 +78,8 @@ export function rowsToThreats(rows: string[][]): Threat[] {
       cm: cell(r, iCM) || undefined,
       impact: cell(r, iI) || undefined,
       conf: cell(r, iConf) || undefined,
+      evidence: cell(r, iEv) || undefined,
+      map: parseMap(r),
       desc: iD >= 0 ? (r[iD] || '').trim() : '',
       note: 'loaded from CSV',
     }))

@@ -17,6 +17,10 @@ export function ruleClass(r: string): string {
 export function phasesStr(L: number[]): string {
   return L.length ? '{' + L.join(',') + '} ' + L.map((p) => LIFE[p].slice(0, 3)).join('/') : '-'
 }
+// full, un-abbreviated phase names — for the roomy Details page (the card uses phasesStr)
+export function phasesFull(L: number[]): string[] {
+  return L.length ? L.map((p) => LIFE[p]) : ['—']
+}
 
 export function segKey(s: string): string {
   return s === 'Human Resources' ? 'HR' : s
@@ -39,3 +43,5 @@ export const PASS1_TIP =
   'Pass 1 of Algorithm 1: Segments, Trust boundaries and Lifecycle are computed automatically from the Affected Assets (A) — not entered by hand. ✓ = consistent.'
 export const PRIMARY_TIP =
   'The rule that sets the threat’s fundamental branch (R1 adversarial · R2 failure · R3 state · R4 environmental · R5 legacy). R6–R10 are add-on modifiers.'
+export const PASS2_TIP =
+  'Pass 2 of Algorithm 1: the SPARTA side — technique chain (TTP), countermeasures (CM) and impact (I) — is mapped by the analyst, not derived. Non-adversarial threats keep TTP = N/A and live on as a precondition (R2–R4).'

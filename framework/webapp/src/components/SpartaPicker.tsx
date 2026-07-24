@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import sparta from '../data/sparta.json'
 import enisa from '../data/enisa_controls.json'
+import { STEP_KINDS, KIND_LABEL, type StepKind } from '../engine/types'
+
+/** One authored step of the attack chain: which technique, what it does, and why. */
+export type ChainStep = { id: string; kind: StepKind; note: string }
 
 type Tech = { id: string; name: string; tactic: string }
 type Control = { title: string; cluster: string; desc: string; frameworks: string[]; sparta: boolean; themes: string[] }
@@ -18,7 +22,7 @@ const BY_E = enisa.byE as Record<string, number[]>
 export function SpartaPicker({
   chain, setChain, cmSel, setCmSel, cmExtra, setCmExtra, e, enisaSel, setEnisaSel,
 }: {
-  chain: string[]; setChain: (v: string[]) => void
+  chain: ChainStep[]; setChain: (v: ChainStep[]) => void
   cmSel: string[]; setCmSel: (v: string[]) => void
   cmExtra: string[]; setCmExtra: (v: string[]) => void
   e: string
@@ -31,12 +35,13 @@ export function SpartaPicker({
   const menuRef = useRef<HTMLDivElement>(null)
   const eFieldRef = useRef<HTMLDivElement>(null)
 
+  const ids = useMemo(() => chain.map((c) => c.id), [chain])
   const matches = useMemo(() => {
     const s = q.trim().toLowerCase()
     if (!s) return []
-    return TECHS.filter((t) => !chain.includes(t.id) &&
+    return TECHS.filter((t) => !ids.includes(t.id) &&
       (t.id.toLowerCase().includes(s) || t.name.toLowerCase().includes(s))).slice(0, 40)
-  }, [q, chain])
+  }, [q, ids])
 
   useEffect(() => { setActive(0) }, [q])
   // keep the highlighted option scrolled into view
@@ -56,16 +61,16 @@ export function SpartaPicker({
   // union of SPARTA countermeasures mapped to the chosen techniques
   const suggestions = useMemo(() => {
     const set = new Set<string>()
-    chain.forEach((id) => (MAP[id] || []).forEach((cm) => set.add(cm)))
+    ids.forEach((id) => (MAP[id] || []).forEach((cm) => set.add(cm)))
     return [...set].sort()
-  }, [chain])
+  }, [ids])
 
   // SPARTA countermeasure themes (names) invoked by the chosen chain — the TTP↔ENISA bridge
   const chosenThemes = useMemo(() => {
     const set = new Set<string>()
-    chain.forEach((id) => (MAP[id] || []).forEach((cm) => { const n = CMNAME[cm]; if (n) set.add(n.toLowerCase()) }))
+    ids.forEach((id) => (MAP[id] || []).forEach((cm) => { const n = CMNAME[cm]; if (n) set.add(n.toLowerCase()) }))
     return set
-  }, [chain])
+  }, [ids])
   const eMatch = (c: Control) => c.themes.some((t) => chosenThemes.has(t))
 
   // ENISA controls for this threat's category, ranked: TTP-relevant first, then SPARTA-backed
@@ -85,8 +90,17 @@ export function SpartaPicker({
   const showLess = () => { setEShow(6); requestAnimationFrame(() => eFieldRef.current?.scrollIntoView({ block: 'nearest' })) }
   const toggleE = (i: number) => setEnisaSel(enisaSel.includes(i) ? enisaSel.filter((x) => x !== i) : [...enisaSel, i])
 
-  const addTech = (id: string) => { if (!chain.includes(id)) setChain([...chain, id]); setQ('') }
-  const rmTech = (id: string) => setChain(chain.filter((x) => x !== id))
+  // a new step defaults its kind from where it lands: first = entry, Impact tactic = effect
+  const addTech = (id: string) => {
+    if (!ids.includes(id)) {
+      const kind: StepKind = chain.length === 0 ? 'entry' : TECHBY[id]?.tactic === 'Impact' ? 'effect' : 'step'
+      setChain([...chain, { id, kind, note: '' }])
+    }
+    setQ('')
+  }
+  const rmTech = (id: string) => setChain(chain.filter((x) => x.id !== id))
+  const setStep = (id: string, patch: Partial<ChainStep>) =>
+    setChain(chain.map((s) => (s.id === id ? { ...s, ...patch } : s)))
   const toggleCm = (id: string) => setCmSel(cmSel.includes(id) ? cmSel.filter((x) => x !== id) : [...cmSel, id])
   const addAll = () => setCmSel([...new Set([...cmSel, ...suggestions])])
   const clearAll = () => setCmSel(cmSel.filter((id) => !suggestions.includes(id)))
@@ -121,18 +135,41 @@ export function SpartaPicker({
           )}
         </div>
         {chain.length > 0 ? (
-          <div className="chain">
-            {chain.map((id, i) => (
-              <span key={id} className="chain-wrap">
-                {i > 0 && <span className="chain-arrow">→</span>}
-                <span className="chain-chip" title={TECHBY[id]?.name}>
-                  <span className="chain-step">{i + 1}</span>
-                  <span className="chain-tac">{TECHBY[id]?.tactic}</span>
-                  {id}<span className="x" onClick={() => rmTech(id)}>×</span>
+          <>
+            <div className="chain">
+              {chain.map((s, i) => (
+                <span key={s.id} className="chain-wrap">
+                  {i > 0 && <span className="chain-arrow">→</span>}
+                  <span className={'chain-chip' + (s.kind === 'bridge' ? ' bridge' : '')} title={TECHBY[s.id]?.name}>
+                    <span className="chain-step">{i + 1}</span>
+                    <span className="chain-tac">{TECHBY[s.id]?.tactic}</span>
+                    {s.id}<span className="x" onClick={() => rmTech(s.id)}>×</span>
+                  </span>
                 </span>
-              </span>
-            ))}
-          </div>
+              ))}
+            </div>
+            {/* per-step: what this step does in the chain, and why */}
+            <div className="stepedit">
+              {chain.map((s, i) => (
+                <div className={'stepedit-row' + (s.kind === 'bridge' ? ' bridge' : '')} key={s.id}>
+                  <span className="stepedit-no">{i + 1}</span>
+                  <div className="stepedit-b">
+                    <div className="stepedit-h">
+                      <b className="stepedit-id">{s.id}</b>
+                      <span className="stepedit-nm">{TECHBY[s.id]?.name}</span>
+                      <select className="stepedit-kind" value={s.kind}
+                        onChange={(ev) => setStep(s.id, { kind: ev.target.value as StepKind })}>
+                        {STEP_KINDS.map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}
+                      </select>
+                    </div>
+                    <input className="stepedit-note" value={s.note}
+                      placeholder="How does this step happen? e.g. the compromised ground system issues valid telecommands over the TC link…"
+                      onChange={(ev) => setStep(s.id, { note: ev.target.value })} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="chain-empty">Your attack chain will build here — add techniques above.</div>
         )}

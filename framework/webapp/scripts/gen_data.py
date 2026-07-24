@@ -28,6 +28,30 @@ for r in range(2, ws.max_row + 1):
         "desc": ws.cell(r,15).value or "",
     })
 
+# Merge authored Pass-2 (SPARTA) mappings from framework/mappings.json, if present, so the
+# tool renders TTP/CM/Pre/I/Conf for mapped threats. Pass-1 fields stay engine-derived; this
+# only fills the analyst-authored fields. Structured chains are flattened to display strings.
+MAP = os.path.join(FRAMEWORK, "mappings.json")
+if os.path.exists(MAP):
+    mp = json.load(open(MAP, encoding="utf-8"))
+    n_mapped = 0
+    for t in threats:
+        e = mp.get(t["id"])
+        if not isinstance(e, dict) or "ttp" not in e:   # skip _about / _schema and unmapped ids
+            continue
+        if e.get("pre"):  t["pre"] = e["pre"]
+        t["ttp"] = " → ".join(f"{x['id']} {x['name']}" for x in e["ttp"])
+        if e.get("cm_sparta"): t["cm"] = " · ".join(f"{c['id']} {c['name']}" for c in e["cm_sparta"])
+        if e.get("impact"): t["impact"] = e["impact"]
+        c = e.get("conf")
+        if isinstance(c, dict):
+            if c.get("grade"): t["conf"] = c["grade"]
+        elif c:
+            t["conf"] = str(c)
+        t["map"] = e   # structured record for the rich card render
+        n_mapped += 1
+    print("mappings.json merged:", n_mapped, "threat(s)")
+
 fixture = {}
 for r in ENG.run(ENG.load_rows(XLSX)):
     fixture[r["id"]] = {"segs": r["dS"], "L": r["dL"], "rules": r["rules"],

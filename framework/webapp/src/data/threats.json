@@ -465,7 +465,133 @@
   "E": "NAA",
   "cia": "A",
   "A": "Ground: TTC Ground (SLE/SDL protocol); Space: BUS (CDHS/COM)",
-  "desc": "Threats to the availability of the satellite bus as a result of adversaries taking control of space assets by exploiting existing vulnerabilities. Such hostile takeovers can result in overtaking control of the management segment to execute malicious commands, as well as complete lockout of legitimate satellite users by overtaking access control."
+  "desc": "Threats to the availability of the satellite bus as a result of adversaries taking control of space assets by exploiting existing vulnerabilities. Such hostile takeovers can result in overtaking control of the management segment to execute malicious commands, as well as complete lockout of legitimate satellite users by overtaking access control.",
+  "pre": "The ground / management segment has an exploitable, reachable vulnerability (enables the takeover), AND the on-board C&DH accepts telecommands from the ground segment without independent anomaly / rate control. Once the ground system is compromised, the bus executes attacker-issued *valid* (legitimately authenticated) telecommands and can be driven to denial / operator lockout. Note: the related link-injection variant (forged / replayed commands) additionally requires the TC link to lack SDLS authentication / integrity - that variant is a distinct record, not this one.",
+  "ttp": "IA-0007 Compromise Ground System → EX-0013.01 Valid Commands → IMP-0002 Disruption → IMP-0003 Denial",
+  "cm": "CM0005 Ground-based Countermeasures · CM0035 Protect Authenticators · CM0053 Physical Security Controls · CM0054 Two-Person Rule · CM0055 Secure Command Mode(s) · CM0029 TRANSEC · CM0036 Session Termination · CM0042 Robust Fault Management · CM0044 Cyber-safe Mode · CM0032 On-board Intrusion Detection & Prevention · CM0034 Monitor Critical Telemetry Points · CM0070 Alternate Communications Paths",
+  "impact": "Loss of satellite-bus availability; hostile takeover of the platform - malicious command execution and complete lockout of legitimate operators (denial of platform control). CIA: Availability.",
+  "conf": "Med",
+  "map": {
+   "name": "Seizure of control: Satellite bus",
+   "pre": "The ground / management segment has an exploitable, reachable vulnerability (enables the takeover), AND the on-board C&DH accepts telecommands from the ground segment without independent anomaly / rate control. Once the ground system is compromised, the bus executes attacker-issued *valid* (legitimately authenticated) telecommands and can be driven to denial / operator lockout. Note: the related link-injection variant (forged / replayed commands) additionally requires the TC link to lack SDLS authentication / integrity - that variant is a distinct record, not this one.",
+   "ttp": [
+    {
+     "id": "IA-0007",
+     "name": "Compromise Ground System",
+     "tactic": "Initial Access",
+     "kind": "entry",
+     "note": "The way in, at the Ground / management segment. ENISA states the takeover proceeds by \"overtaking control of the management segment\" - so the ground system, not the link, is the entry point."
+    },
+    {
+     "id": "EX-0013.01",
+     "name": "Valid Commands",
+     "tactic": "Execution",
+     "kind": "bridge",
+     "note": "Crosses the Ground <-> Space telecommand-link trust boundary (R9). Because the ground system is already compromised, the telecommands it issues are legitimately authenticated - they are *valid* commands, which is why link authentication alone does not stop this step. Lateral movement then carries the attacker over the command link into the satellite bus."
+    },
+    {
+     "id": "IMP-0002",
+     "name": "Disruption",
+     "tactic": "Impact",
+     "kind": "effect",
+     "note": "Disruption of the satellite bus in the Space segment."
+    },
+    {
+     "id": "IMP-0003",
+     "name": "Denial",
+     "tactic": "Impact",
+     "kind": "effect",
+     "note": "Denial of platform control - complete lockout of legitimate operators. Matches the ENISA CIA tag for this threat (Availability)."
+    }
+   ],
+   "cm_sparta": [
+    {
+     "id": "CM0005",
+     "name": "Ground-based Countermeasures",
+     "stage": "IA-0007"
+    },
+    {
+     "id": "CM0035",
+     "name": "Protect Authenticators",
+     "stage": "IA-0007"
+    },
+    {
+     "id": "CM0053",
+     "name": "Physical Security Controls",
+     "stage": "IA-0007"
+    },
+    {
+     "id": "CM0054",
+     "name": "Two-Person Rule",
+     "stage": "IA-0007"
+    },
+    {
+     "id": "CM0055",
+     "name": "Secure Command Mode(s)",
+     "stage": "IA-0007"
+    },
+    {
+     "id": "CM0029",
+     "name": "TRANSEC",
+     "stage": "EX-0013.01"
+    },
+    {
+     "id": "CM0036",
+     "name": "Session Termination",
+     "stage": "EX-0013.01"
+    },
+    {
+     "id": "CM0042",
+     "name": "Robust Fault Management",
+     "stage": "EX-0013.01"
+    },
+    {
+     "id": "CM0044",
+     "name": "Cyber-safe Mode",
+     "stage": "EX-0013.01"
+    },
+    {
+     "id": "CM0032",
+     "name": "On-board Intrusion Detection & Prevention",
+     "stage": "IA-0007 + EX-0013.01"
+    },
+    {
+     "id": "CM0034",
+     "name": "Monitor Critical Telemetry Points",
+     "stage": "IA-0007 + EX-0013.01"
+    },
+    {
+     "id": "CM0070",
+     "name": "Alternate Communications Paths",
+     "stage": "IA-0007 + EX-0013.01"
+    }
+   ],
+   "cm_standards": [
+    "NIST SP 800-53: AC (access control) + IA (identification & authentication) - harden the ground/management segment against IA-0007",
+    "NIST SP 800-53: SI (system & information integrity) + SC (system & communications protection) - on-board detection & command-path protection",
+    "NIST SP 800-53: CP (contingency planning) - availability recovery (maps to CM0070)",
+    "CCSDS 355.0-B-2 (SDLS) + 355.1-B-1 (SDLS-EP: key management / OTAR) - authenticate & integrity-protect the TC link. NOTE: this primarily defends the forged/replayed-command variant (EX-0014 / EX-0001); it does NOT stop valid commands from a compromised-but-authorized ground system, so it complements rather than replaces the resilience CMs above."
+   ],
+   "cm_enisa": "ENISA threat-level controls for TR52 are auto-ranked by the tool from enisa_controls.json (standards-traceable to ISO 27001 / NIST CSF / NIS2 / CCSDS); dual-sourced with the SPARTA CMs above.",
+   "impact": "Loss of satellite-bus availability; hostile takeover of the platform - malicious command execution and complete lockout of legitimate operators (denial of platform control). CIA: Availability.",
+   "conf": {
+    "grade": "Med",
+    "note": "Graded at the weakest link (R7). The ENISA footprint is directly stated by the primary source - Annex C p.88 gives the affected assets (Ground: TTC Ground [SLE/SDL]; Space: BUS [CDHS/COM]) and CIA=Availability - but the SPARTA side is analyst inference: the IA->EX/LM->IMP stitch and the specific EX-0013.01 choice are reasoned, not sourced. Real-incident analogs (Viasat/AcidRain 2022, hostile TT&C takeover class) support plausibility but not this exact technique stitch, so the record as a whole is Med."
+   },
+   "rules": [
+    "R1 - adversarial (intentional cyber, NAA) -> direct SPARTA mapping",
+    "R6 - one ENISA threat -> multiple SPARTA techniques (IA + EX + 2x IMP), evidence per mapping",
+    "R8 - each CM bound to a specific stage technique (IA-0007 or EX-0013.01), not the threat category",
+    "R9 - affected asset spans Ground + Space -> ONE set-valued record with a bridging sub-chain IA->EX/LM->IMP across the trust boundary",
+    "R10 - considered, not triggered: TTP/CM do not differ across the lifecycle set, so L stays a set and the record is not split"
+   ],
+   "evidence": [
+    "ENISA Space Threat Landscape (2025) Annex C Table 17, p.88 - affected assets + CIA=Availability",
+    "SPARTA v3.2 (The Aerospace Corporation) - IA-0007, EX-0013.01, IMP-0002/0003 and their CM mappings (verified against sparta.json)",
+    "CCSDS 355.0-B-2 (SDLS), CCSDS 355.1-B-1 (SDLS-EP) - TC-link authentication overlay",
+    "Viasat KA-SAT / AcidRain (Feb 2022) - real-incident analog for ground-segment compromise -> loss of terminal service (plausibility anchor, not an exact TR52 match)"
+   ]
+  }
  },
  {
   "id": "TR53",

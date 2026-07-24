@@ -2,14 +2,23 @@ import { Fragment, useState } from 'react'
 import { CLUSTER2E, runOne } from '../engine/algorithm'
 import { segKey, phasesStr } from '../engine/ui'
 import { ASSET_OPTIONS, PICK_SEGMENTS, type AssetGroup, type AssetOption } from '../engine/architecture'
-import { SpartaPicker } from './SpartaPicker'
+import { SpartaPicker, type ChainStep } from './SpartaPicker'
+import type { Mapping } from '../engine/types'
 import enisaData from '../data/enisa_controls.json'
+import spartaData from '../data/sparta.json'
+
+const TECHBY: Record<string, { id: string; name: string; tactic: string }> =
+  Object.fromEntries((spartaData.techniques as { id: string; name: string; tactic: string }[]).map((t) => [t.id, t]))
+const CMNAME: Record<string, string> =
+  Object.fromEntries((spartaData.countermeasures as { id: string; name: string }[]).map((c) => [c.id, c.name]))
+const SPARTA_MAP = spartaData.map as Record<string, string[]>   // technique id → countermeasure ids
 
 const ECONTROLS = enisaData.controls as { title: string }[]
 
 export interface NewThreat {
   name: string; cluster: string; A: string; cia: string; desc: string
-  pre: string; ttp: string; cm: string; impact: string; conf: string
+  pre: string; ttp: string; cm: string; impact: string; conf: string; evidence: string
+  map?: Mapping        // structured Pass-2 record, so a custom threat renders like a reference one
   form?: BuilderState
 }
 
@@ -23,15 +32,18 @@ const CIA_KEYS = ['C', 'I', 'A'] as const
 type CiaKey = typeof CIA_KEYS[number]
 // SPARTA Impact (IMP) tactic outcomes — verified against the SPARTA dataset
 const IMPACTS = ['Deception', 'Disruption', 'Denial', 'Degradation', 'Destruction', 'Theft']
-const CONFS = ['High', 'Medium', 'Low']
+// one record-level confidence grade. (The reference ENISA records carry a split
+// footprint/bridge grade, but a custom threat may not exist in the ENISA landscape at all —
+// which would force a meaningless "Low" on both axes — so authoring keeps a single grade.)
+const CONFS = ['High', 'Med', 'Low']
 
 /** Raw builder form state, kept in memory (never persisted like a DB) so an analyst-added threat can
  *  be re-opened and edited losslessly — the flat A/TTP/CM strings can't be round-tripped back to picks. */
 export interface BuilderState {
   name: string; desc: string; cluster: string; cia: Record<CiaKey, boolean>
   sel: Record<string, SegSel>; pre: string
-  chain: string[]; cmSel: string[]; enisaSel: number[]; cmExtra: string[]
-  impact: string[]; conf: string
+  chain: ChainStep[]; cmSel: string[]; enisaSel: number[]; cmExtra: string[]
+  impact: string[]; conf: string; confNote: string; evidence: string
 }
 
 export function Builder({ onSubmit, initial, editing = false, onCancel }: {
@@ -51,12 +63,14 @@ export function Builder({ onSubmit, initial, editing = false, onCancel }: {
   const [pre, setPre] = useState(initial?.pre ?? '')
   // SPARTA-mapping side (optional) — open it if the edited threat already carries a mapping
   const [showMap, setShowMap] = useState(!!initial && (initial.chain.length + initial.cmSel.length + initial.enisaSel.length + initial.cmExtra.length + initial.impact.length > 0))
-  const [chain, setChain] = useState<string[]>(initial?.chain ?? [])
+  const [chain, setChain] = useState<ChainStep[]>(initial?.chain ?? [])
   const [cmSel, setCmSel] = useState<string[]>(initial?.cmSel ?? [])
   const [enisaSel, setEnisaSel] = useState<number[]>(initial?.enisaSel ?? [])
   const [cmExtra, setCmExtra] = useState<string[]>(initial?.cmExtra ?? [])
   const [impact, setImpact] = useState<string[]>(initial?.impact ?? [])
   const [conf, setConf] = useState(initial?.conf ?? '')
+  const [confNote, setConfNote] = useState(initial?.confNote ?? '')
+  const [evidence, setEvidence] = useState(initial?.evidence ?? '')
 
   const buildA = () => {
     const parts: string[] = []
@@ -108,7 +122,7 @@ export function Builder({ onSubmit, initial, editing = false, onCancel }: {
   const resetForm = () => {
     setName(''); setDesc(''); setCluster(Object.keys(CLUSTER2E)[0]); setCia({ C: false, I: false, A: false })
     setSel(emptySel()); setDraft(emptyDraft()); setExpanded(null)
-    setPre(''); setChain([]); setCmSel([]); setEnisaSel([]); setCmExtra([]); setImpact([]); setConf(''); setShowMap(false)
+    setPre(''); setChain([]); setCmSel([]); setEnisaSel([]); setCmExtra([]); setImpact([]); setConf(''); setConfNote(''); setEvidence(''); setShowMap(false)
   }
 
   const submit = (e: React.FormEvent) => {
@@ -123,13 +137,39 @@ export function Builder({ onSubmit, initial, editing = false, onCancel }: {
       spartaCm.length ? 'SPARTA: ' + spartaCm.join(', ') : '',
       enisaCm.length ? 'ENISA: ' + enisaCm.join(', ') : '',
     ].filter(Boolean).join('  ·  ')
+    // structured Pass-2 record — same shape the reference (ENISA) threats carry, so a custom
+    // threat renders identically on the Details page
+    const evLines = evidence.split('\n').map((s) => s.trim()).filter(Boolean)
+    const hasMap = chain.length > 0 || pre.trim() || impact.length || conf || evLines.length
+    const map: Mapping | undefined = hasMap ? {
+      name: name.trim(),
+      pre: pre.trim() || undefined,
+      ttp: chain.map((s) => ({
+        id: s.id, name: TECHBY[s.id]?.name ?? s.id, tactic: TECHBY[s.id]?.tactic ?? '',
+        kind: s.kind, note: s.note.trim() || undefined,
+      })),
+      // bind each SPARTA countermeasure to the stage technique(s) it defends (R8) — so the detail
+      // page groups them by stage (like TR52), not a single "general" bucket. Free-text controls
+      // have no mapped stage.
+      cm_sparta: [
+        ...cmSel.map((id) => {
+          const stages = chain.filter((s) => (SPARTA_MAP[s.id] || []).includes(id)).map((s) => s.id)
+          return { id, name: CMNAME[id] ?? '', stage: stages.join(' + ') || undefined }
+        }),
+        ...cmExtra.map((x) => ({ id: x, name: '' })),
+      ],
+      cm_enisa: enisaSel.length ? enisaSel.map((i) => ECONTROLS[i].title).join(' · ') : undefined,
+      impact: impact.length ? impact.join(', ') : undefined,
+      conf: conf ? { grade: conf, note: confNote.trim() || undefined } : undefined,
+      evidence: evLines.length ? evLines : undefined,
+    } : undefined
     // structured form kept for lossless edit round-trip (in memory only, not a DB)
-    const form: BuilderState = { name: name.trim(), desc: desc.trim(), cluster, cia, sel, pre: pre.trim(), chain, cmSel, enisaSel, cmExtra, impact, conf }
+    const form: BuilderState = { name: name.trim(), desc: desc.trim(), cluster, cia, sel, pre: pre.trim(), chain, cmSel, enisaSel, cmExtra, impact, conf, confNote: confNote.trim(), evidence: evidence.trim() }
     onSubmit({
       name: name.trim(), cluster, A, cia: ciaStr(), desc: desc.trim(),
-      pre: pre.trim(), ttp: chain.join(' → '),
+      pre: pre.trim(), ttp: chain.map((s) => s.id).join(' → '),
       cm,
-      impact: impact.join(', '), conf, form,
+      impact: impact.join(', '), conf, evidence: evidence.trim(), map, form,
     })
     if (!editing) resetForm()
   }
@@ -302,15 +342,26 @@ export function Builder({ onSubmit, initial, editing = false, onCancel }: {
           )}
         </div>
 
-        {/* record-level annotation — not part of either pass */}
-        <div className="record-foot">
-          <div className="rf-l">Conf — record confidence<span className="rf-s">Analyst's confidence in this tuple</span></div>
-          <div className="confrow">
-            {CONFS.map((c) => (
-              <button key={c} type="button" className={'ctog' + (conf === c ? ' on' : '')}
-                onClick={() => setConf(conf === c ? '' : c)} aria-pressed={conf === c}>{c}</button>
-            ))}
+        {/* record-level annotations — not part of either pass */}
+        <div className="field">
+          <label>Evidence <span className="opt">(optional · one source per line)</span></label>
+          <textarea className="evbox" value={evidence} onChange={(e) => setEvidence(e.target.value)}
+            placeholder={'Primary sources this record traces to, e.g.\nENISA Space Threat Landscape (2025) Annex C, p.88\nSPARTA v3.2 — IA-0007, EX-0013.01\nCCSDS 355.0-B-2 (SDLS)'} />
+        </div>
+        <div className="record-foot col">
+          <div className="rf-top">
+            <div className="rf-l">Conf — record confidence<span className="rf-s">Analyst's confidence in this tuple</span></div>
+            <div className="confrow">
+              {CONFS.map((c) => (
+                <button key={c} type="button" className={'ctog' + (conf === c ? ' on' : '')}
+                  onClick={() => setConf(conf === c ? '' : c)} aria-pressed={conf === c}>{c}</button>
+              ))}
+            </div>
           </div>
+          {conf && (
+            <textarea className="confnote-in" value={confNote} onChange={(e) => setConfNote(e.target.value)}
+              placeholder={`Why ${conf}? (optional) — e.g. what is directly sourced vs analyst inference, and the weakest link that sets the grade`} />
+          )}
         </div>
 
         <div className="builder-actions">

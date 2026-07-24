@@ -14,6 +14,9 @@
   /* unique accents for the top-5 tuple elements: A · S · E · TTP · CM */
   --t-a:#b9a3ff; --t-s:#f5b13c; --t-e:#5ee0a4; --t-ttp:#fb7185; --t-cm:#7dd3fc;
   --mono:"Cascadia Code",Consolas,ui-monospace,"SFMono-Regular",monospace;
+  /* reading font for the document surfaces (Method Guide / Details) — a humanist stack that is
+     visibly rounder and more legible at long-form sizes than the UI font */
+  --doc:"Segoe UI Variable Text","Inter","Optima",Candara,"Trebuchet MS",system-ui,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
@@ -259,6 +262,13 @@ button.phase-h:hover{background:color-mix(in srgb,var(--ink) 5%,var(--surface2))
 .record-foot .rf-l{font-size:12.5px;font-weight:700;color:var(--ink2)}
 .record-foot .rf-s{display:block;font-size:11px;font-weight:500;color:var(--faint);margin-top:1px}
 .record-foot .confrow{flex:1;min-width:190px;max-width:290px}
+.evbox{min-height:92px}
+.record-foot.col{flex-direction:column;align-items:stretch;gap:10px}
+.rf-top{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap}
+.rf-top .confrow{flex:1;min-width:190px;max-width:290px}
+.confnote-in{width:100%;font:inherit;font-size:12.5px;line-height:1.5;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:58px;resize:vertical}
+.confnote-in:focus{outline:none;border-color:var(--brand)}
+.confnote-in::placeholder{color:var(--faint)}
 .improw{display:flex;flex-wrap:wrap;gap:7px}
 .confrow{display:flex;gap:8px}
 .apick-derived{margin-top:8px;font:12px/1.5 var(--mono);color:var(--ink2);padding:0 2px;word-break:break-word}
@@ -294,6 +304,22 @@ button.phase-h:hover{background:color-mix(in srgb,var(--ink) 5%,var(--surface2))
 .chain-tac{font:700 8.5px/1 "Segoe UI",Arial;text-transform:uppercase;letter-spacing:.3px;color:var(--faint)}
 .chain-guide{margin-top:0;margin-bottom:9px}
 .chain-empty{margin-top:10px;font-size:12px;color:var(--faint);font-style:italic;padding:9px 11px;border:1px dashed var(--line);border-radius:9px;background:var(--surface2)}
+.chain-chip.bridge{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 16%,var(--surface2))}
+.chain-chip.bridge .chain-step{background:color-mix(in srgb,var(--danger) 34%,var(--surface))}
+/* per-step editor: what each step does in the chain, and why */
+.stepedit{margin-top:11px;display:flex;flex-direction:column;gap:7px}
+.stepedit-row{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface2)}
+.stepedit-row.bridge{border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+.stepedit-no{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 10.5px var(--mono);background:color-mix(in srgb,var(--coral) 26%,transparent);color:var(--coral);margin-top:3px}
+.stepedit-row.bridge .stepedit-no{background:color-mix(in srgb,var(--danger) 28%,transparent);color:var(--danger)}
+.stepedit-b{min-width:0}
+.stepedit-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.stepedit-id{font-family:var(--mono);font-size:12.5px;color:var(--coral)}
+.stepedit-nm{font-size:12.5px;color:var(--ink);flex:1;min-width:0}
+.stepedit-kind{font:600 11px "Segoe UI",Arial;color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:3px 7px;cursor:pointer}
+.stepedit-note{width:100%;font:inherit;font-size:12.5px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.stepedit-note:focus{outline:none;border-color:var(--brand)}
+.stepedit-note::placeholder{color:var(--faint)}
 .cmsug-h{display:flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;color:var(--faint);margin:2px 0 8px}
 .cmsug-all{margin-left:auto;font-size:11px;font-weight:700;color:var(--brand2);background:none;border:none;cursor:pointer;padding:0}
 .cmsug-all:hover{text-decoration:underline}
@@ -385,6 +411,131 @@ button.phase-h:hover{background:color-mix(in srgb,var(--ink) 5%,var(--surface2))
 .f.a .k,.f.s .k,.f.e .k,.f.ttp .k,.f.cm .k{font-weight:800}
 .f.minor .k{color:var(--cink)}
 .f.minor .v{color:var(--cink)}
+
+/* ---- rich mapping view (structured Pass-2 render) ---- */
+.f.col{flex-direction:column;gap:7px}
+.f.col>.k{text-align:left;width:auto}
+.pre-txt{color:var(--cmut);line-height:1.62}
+/* TTP technique chain — every box the same width, and equal height within a row */
+.chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px}
+.dfield .chain{justify-content:center}   /* centre the chain on the wide Details page */
+.chain-node{display:flex;align-items:stretch;gap:8px;height:100%}
+.chain-arr{color:var(--faint);font-weight:700;align-self:center;flex:none}
+/* the boxes carry only id · tactic · name, so every step is identical in size with nothing
+   truncated — the per-step reasoning is listed below the chain instead */
+.tech{display:flex;flex-direction:column;gap:2px;width:196px;height:88px;box-sizing:border-box;padding:9px 12px;border:1px solid color-mix(in srgb,var(--t-ttp) 34%,var(--cline));border-radius:9px;background:color-mix(in srgb,var(--t-ttp) 7%,var(--card))}
+.tech-top{display:flex;align-items:center;gap:7px}
+.tech-no{width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 10px var(--mono);background:color-mix(in srgb,var(--t-ttp) 26%,transparent);color:var(--t-ttp)}
+.tech-id{color:var(--t-ttp);font-size:13px;letter-spacing:.3px}
+.tech-tac{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px}
+.tech-name{font-size:13px;line-height:1.35;color:var(--ink);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.tech.bridge{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,var(--card));box-shadow:0 0 0 1px color-mix(in srgb,var(--danger) 22%,transparent)}
+.tech.bridge .tech-no{background:color-mix(in srgb,var(--danger) 26%,transparent);color:var(--danger)}
+.tech-flag{font:800 9px var(--mono);letter-spacing:.3px;color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 45%,transparent);border-radius:4px;padding:1px 4px;margin-left:auto}
+
+/* per-step reasoning, listed under the chain — nothing truncated */
+.steplist{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.stepitem{display:grid;grid-template-columns:auto 1fr;gap:11px;padding:9px 11px;border-radius:9px;border-left:2px solid transparent}
+.stepitem.bridge{border-left-color:var(--danger);background:color-mix(in srgb,var(--danger) 6%,transparent)}
+.stepitem-no{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 10.5px var(--mono);background:color-mix(in srgb,var(--t-ttp) 22%,transparent);color:var(--t-ttp);margin-top:2px}
+.stepitem.bridge .stepitem-no{background:color-mix(in srgb,var(--danger) 24%,transparent);color:var(--danger)}
+.stepitem-h{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.stepitem-id{font-family:var(--mono);font-size:13px;color:var(--t-ttp)}
+.stepitem-nm{font-size:13.5px;font-weight:700;color:var(--ink)}
+.stepitem-kind{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;border-radius:4px;padding:1px 6px;border:1px solid currentColor;opacity:.85}
+.k-entry{color:var(--sg)}.k-bridge{color:var(--danger)}.k-effect{color:var(--amber)}.k-step{color:var(--ink2)}
+.stepitem-note{margin:4px 0 0;font-size:13.5px;line-height:1.62;color:var(--ink2)}
+/* CM grouped by stage */
+.cmgroups{display:flex;flex-direction:column;gap:9px}
+.cmgroup{display:flex;flex-direction:column;gap:5px}
+.cmg-lab{font-size:13px;letter-spacing:.3px;color:var(--t-cm);font-weight:800}
+.cmg-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cmchip{font-size:12px;padding:4px 9px;border:1px solid color-mix(in srgb,var(--t-cm) 30%,var(--cline));border-radius:7px;background:color-mix(in srgb,var(--t-cm) 8%,var(--card));color:var(--cink)}
+.cmchip b{color:var(--t-cm);font-weight:700;letter-spacing:.2px}
+.cmgroup.overlay .cmg-lab{color:var(--amber);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.cmg-std{display:flex;flex-direction:column;gap:4px}
+.stdline{font-size:12.5px;color:var(--ink2);line-height:1.55;padding-left:10px;border-left:2px solid color-mix(in srgb,var(--t-cm) 30%,transparent)}
+.stdline.enisa{border-left-color:color-mix(in srgb,var(--t-e) 40%,transparent)}
+/* Conf badges */
+.confbox{min-width:0}
+.confrow{display:flex;gap:6px;flex-wrap:wrap}
+.confbadge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid var(--cline);letter-spacing:.3px}
+.confbadge.g-high{color:var(--cg);border-color:color-mix(in srgb,var(--cg) 45%,transparent);background:color-mix(in srgb,var(--cg) 12%,transparent)}
+.confbadge.g-med{color:var(--ca);border-color:color-mix(in srgb,var(--ca) 45%,transparent);background:color-mix(in srgb,var(--ca) 12%,transparent)}
+.confbadge.g-low{color:var(--cr);border-color:color-mix(in srgb,var(--cr) 45%,transparent);background:color-mix(in srgb,var(--cr) 12%,transparent)}
+.confnote{margin-top:5px;font-size:10.5px;line-height:1.55;color:var(--faint)}
+/* ---- card: 3-line clamp with a "…" expander for long values ----
+   the button sits at the end of the truncated text (bottom-right), i.e. exactly where the
+   clamp's ellipsis falls, rather than floating off to the side */
+.clampwrap{position:relative;display:block;min-width:0}
+/* reserve a gutter on the right so the "…" button never sits on top of the text */
+.clamp{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;padding-right:30px}
+.clamp.open{display:block;overflow:visible}
+.clampbtn{position:absolute;right:0;bottom:0;appearance:none;cursor:pointer;font:700 12px/1 var(--mono);color:var(--cmut);background:var(--card);border:1px solid var(--cline);border-radius:5px;padding:2px 6px;transition:color .14s,border-color .14s,background .14s}
+.clampbtn:hover{color:var(--ink);border-color:var(--brand);background:color-mix(in srgb,var(--brand) 22%,var(--card))}
+.clampbtn.open{font-size:10px;padding:3px 6px}
+
+/* ---- card: small 'Details' link to the full dossier (right-aligned) ---- */
+.detailrow{display:flex;justify-content:flex-end;margin-top:5px}
+.detailbtn-sm{appearance:none;font:inherit;font-size:11.5px;font-weight:700;letter-spacing:.2px;cursor:pointer;color:var(--t-cm);background:color-mix(in srgb,var(--t-cm) 8%,transparent);border:1px solid color-mix(in srgb,var(--t-cm) 32%,var(--cline));border-radius:7px;padding:3px 11px;transition:.15s}
+.detailbtn-sm:hover{background:color-mix(in srgb,var(--t-cm) 16%,transparent);border-color:var(--t-cm)}
+
+/* ---- Details tab (full dossiers) ---- */
+.detailpage{flex:1;min-height:0;overflow-y:auto;font-family:var(--doc);background:radial-gradient(1200px 560px at 50% -12%,color-mix(in srgb,var(--brand) 6%,transparent),transparent 70%),var(--bg)}
+/* wider than the other doc pages so a 4-5 step technique chain fits on one line
+   (prose below is capped separately so long lines stay readable) */
+.detaildoc{max-width:1280px;margin:0 auto;padding:34px 30px 90px}
+.dhead{border-bottom:1px solid var(--line);padding-bottom:22px}
+.dhead h1{margin:10px 0 0;font-size:26px;font-weight:800;color:var(--ink)}
+.dcount{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--signal);font-weight:700}
+.detaildoc .glede{max-width:none}        /* the wide page lets the intro fill too */
+/* Details tab — list of collapsible dossier rows */
+.drlist{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.drrow{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;transition:box-shadow .3s,border-color .3s}
+.drrow.open{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.drrow.flash{border-color:var(--signal);box-shadow:0 0 0 1px var(--signal),0 0 26px -6px color-mix(in srgb,var(--signal) 60%,transparent)}
+.drrow-head{width:100%;appearance:none;cursor:pointer;font:inherit;text-align:left;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;background:none;border:0;color:var(--ink);transition:background .16s}
+.drrow-head:hover{background:color-mix(in srgb,var(--brand) 5%,transparent)}
+.drrow.open .drrow-head{border-bottom:1px solid var(--line2);background:color-mix(in srgb,var(--brand) 6%,var(--surface2))}
+.drrow-id{font-family:var(--mono);font-weight:800;font-size:14px;color:var(--signal);flex:none}
+.drrow-name{font-size:16px;font-weight:800;color:var(--ink);flex:1;min-width:0}
+.dossier-tag{margin-left:8px;font-size:10px;font-weight:700;color:var(--amber);border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);border-radius:5px;padding:1px 6px;vertical-align:middle}
+.drrow-meta{display:flex;align-items:center;gap:10px;flex:none}
+.drrow-steps{font-size:11.5px;color:var(--ink2);font-family:var(--mono)}
+.drrow-nat{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px}
+.drrow-chev{flex:none;color:var(--faint);font-size:12px;transition:transform .2s;transform:rotate(-90deg)}
+.drrow.open .drrow-chev{transform:none;color:var(--brand2)}
+.confbadge.sm{font-size:10.5px;padding:1px 8px}
+/* phase banner inside a dossier — mirrors the builder's PHASE 1 / PHASE 2 headers */
+.dphase{display:flex;align-items:center;gap:12px;margin:0;padding:12px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface2)}
+.dossier-body>.dphase:first-child{border-top:0}   /* row header already provides the divider */
+.dphase.p1{border-left:3px solid var(--sg);background:linear-gradient(90deg,color-mix(in srgb,var(--sg) 12%,var(--surface2)),var(--surface2) 60%)}
+.dphase.p2{border-left:3px solid var(--t-ttp);background:linear-gradient(90deg,color-mix(in srgb,var(--t-ttp) 12%,var(--surface2)),var(--surface2) 60%)}
+.dphase-no{width:26px;height:26px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 13px var(--mono);color:#fff}
+.dphase.p1 .dphase-no{background:var(--sg);color:#04241a}
+.dphase.p2 .dphase-no{background:var(--t-ttp);color:#3a0713}
+.dphase-t{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:.3px}
+.dphase-s{font-size:12px;color:var(--ink2);margin-top:1px}
+/* ENISA (Pass-1) block — one row per element; multi-part values get one line each */
+.dossier-enisa{padding:4px 20px 14px}
+.drow{display:grid;grid-template-columns:170px 1fr;gap:16px;padding:11px 0;border-bottom:1px solid var(--line2)}
+.drow:last-child{border-bottom:0}
+.drow-k{font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--signal);padding-top:3px}
+.drow-v{min-width:0}
+.drow-line{font-size:15px;line-height:1.55;color:var(--ink);word-break:break-word}
+.drow-line+.drow-line{margin-top:4px}
+.ddoc-fields{padding:2px 20px 18px}
+.dfield{padding:17px 0;border-bottom:1px solid var(--line2)}
+.dfield:last-child{border-bottom:0}
+.dfield-h{display:flex;align-items:baseline;gap:9px}
+.dfield-name{font-size:16px;font-weight:800;color:var(--ink)}
+.dfield-let{font-family:var(--mono);font-size:11px;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.dfield-def{font-size:12.5px;color:var(--ink2);line-height:1.55;margin:5px 0 13px}
+.dtext{margin:0;font-size:14px;line-height:1.7;color:var(--ink)}
+.dtext.muted{margin-top:9px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
+.dlist{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.dlist li{font-size:13.5px;line-height:1.6;color:var(--ink)}
+
 .cfoot{padding:12px 15px 14px;border-top:1px solid var(--cline);background:color-mix(in srgb,var(--card) 80%,#000)}
 .rules{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .rc{font:700 12px/1 "Segoe UI",Arial;padding:6px 10px;border-radius:6px}
@@ -393,6 +544,7 @@ button.phase-h:hover{background:color-mix(in srgb,var(--ink) 5%,var(--surface2))
 .r-mod{background:color-mix(in srgb,var(--cb) 13%,transparent);color:var(--cb);border:1px solid color-mix(in srgb,var(--cb) 38%,#000)}
 .r-span{background:color-mix(in srgb,var(--ca) 13%,transparent);color:var(--ca);border:1px solid color-mix(in srgb,var(--ca) 38%,#000)}
 .tstat{font-size:13px;color:#aebace;line-height:1.55}.tstat b{color:var(--cink)}.ok{color:var(--cg)}
+.pend{color:var(--cmut)}   /* Pass-2 not mapped yet */
 .rc[data-tip]{cursor:help}
 .hastip{cursor:help;border-bottom:1px dotted color-mix(in srgb,currentColor 50%,transparent)}
 .apptip{position:fixed;z-index:200;max-width:300px;background:#0b1220;border:1px solid var(--brand);color:var(--cink);font:400 12.5px/1.5 "Segoe UI",Arial;padding:9px 12px;border-radius:9px;box-shadow:0 12px 32px rgba(0,0,0,.55);pointer-events:none;opacity:0;transition:opacity .12s;left:0;top:0}
@@ -532,6 +684,6 @@ button.phase-h:hover{background:color-mix(in srgb,var(--ink) 5%,var(--surface2))
 .hfoot{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;line-height:1.7;color:var(--faint)}
 
 @media(max-width:1000px){
-  .guide,.home{overflow:visible}
+  .guide,.home,.detailpage{overflow:visible}
   .hgplus,.hgeq{transform:rotate(90deg)}
 }

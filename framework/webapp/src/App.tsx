@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Threat } from './engine/types'
 import { runOne, CLUSTER2E } from './engine/algorithm'
 import { parseCSV, rowsToThreats, threatsToCSV, download } from './engine/csv'
@@ -10,18 +10,21 @@ import { Builder, type NewThreat, type BuilderState } from './components/Builder
 import { ThreatList } from './components/ThreatList'
 import { Home } from './components/Home'
 import { Guide } from './components/Guide'
+import { Detail } from './components/Detail'
 
 const SEED = threatsData as Threat[]
 
-type View = 'home' | 'guide' | 'model'
+type View = 'home' | 'guide' | 'model' | 'detail'
 const TABS: { id: View; label: string; icon: string }[] = [
   { id: 'home', label: 'Home', icon: '◆' },
   { id: 'guide', label: 'Method Guide', icon: '❏' },
   { id: 'model', label: 'Threat Model', icon: '⌖' },
+  { id: 'detail', label: 'Details', icon: '≣' },
 ]
 
 export default function App({ initialView = 'home' }: { initialView?: View } = {}) {
   const [view, setView] = useState<View>(initialView)      // landing page is the front door
+  const [detailFocusId, setDetailFocusId] = useState<string | null>(null)   // scroll target on the Details tab
   const [threats, setThreats] = useState<Threat[]>(SEED)   // the 58 ENISA threats load by default
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filter, setFilter] = useState<string | null>(null)
@@ -78,12 +81,14 @@ export default function App({ initialView = 'home' }: { initialView?: View } = {
     const t: Threat = {
       id, cluster: n.cluster, name: n.name,
       E: CLUSTER2E[n.cluster] || '?', cia: n.cia, A: n.A,
-      desc: n.desc || '(analyst-added threat)', note: 'custom', custom: true,
+      desc: n.desc || '(analyst-added threat)', note: 'custom', custom: true, fresh: true,
       pre: n.pre || undefined, ttp: n.ttp || undefined, cm: n.cm || undefined,
-      impact: n.impact || undefined, conf: n.conf || undefined,
+      impact: n.impact || undefined, conf: n.conf || undefined, evidence: n.evidence || undefined,
+      map: n.map,
     }
     if (n.form) formStore.current.set(id, n.form)
     setThreats((prev) => [...prev, t])   // append to the existing list
+    setDetailFocusId(null)               // don't auto-open anything on the Details tab
     setFilter(null); setQuery(''); setSelectedId(id); setDirty(true); setShowAdd(false)   // collapse the builder
   }
   const updateThreat = (id: string, n: NewThreat) => {
@@ -92,7 +97,8 @@ export default function App({ initialView = 'home' }: { initialView?: View } = {
       ...t, cluster: n.cluster, name: n.name, E: CLUSTER2E[n.cluster] || '?', cia: n.cia, A: n.A,
       desc: n.desc || '(analyst-added threat)',
       pre: n.pre || undefined, ttp: n.ttp || undefined, cm: n.cm || undefined,
-      impact: n.impact || undefined, conf: n.conf || undefined,
+      impact: n.impact || undefined, conf: n.conf || undefined, evidence: n.evidence || undefined,
+      map: n.map,
     } : t)))
     setEditingId(null); setSelectedId(id); setDirty(true)
   }
@@ -100,6 +106,8 @@ export default function App({ initialView = 'home' }: { initialView?: View } = {
     setEditingId(id); setShowAdd(true); setSelectedId(null)
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
+  const openDetail = (id: string) => { setDetailFocusId(id); setView('detail') }   // card → full dossier
+  const clearDetailFocus = useCallback(() => setDetailFocusId(null), [])
   const removeThreat = (id: string) => {
     const next = threats.filter((t) => t.id !== id)
     setThreats(next)
@@ -153,7 +161,8 @@ export default function App({ initialView = 'home' }: { initialView?: View } = {
       <nav className="tabs" role="tablist" aria-label="PHALANX views">
         {TABS.map((t) => (
           <button key={t.id} role="tab" aria-selected={view === t.id}
-            className={'tab' + (view === t.id ? ' on' : '')} onClick={() => setView(t.id)}>
+            className={'tab' + (view === t.id ? ' on' : '')}
+            onClick={() => { setDetailFocusId(null); setView(t.id) }}>
             <span className="ti" aria-hidden="true">{t.icon}</span>{t.label}
           </button>
         ))}
@@ -161,6 +170,7 @@ export default function App({ initialView = 'home' }: { initialView?: View } = {
 
       {view === 'home' && <Home onNav={setView} />}
       {view === 'guide' && <Guide />}
+      {view === 'detail' && <Detail threats={threats} results={results} focusId={detailFocusId} onFocusConsumed={clearDetailFocus} />}
       {view === 'model' && <div className="app">
         <div className="col mid">
           <div className="chead">
@@ -219,7 +229,7 @@ export default function App({ initialView = 'home' }: { initialView?: View } = {
             ) : (
               <ThreatList
                 items={items} results={results} selectedId={selectedId}
-                onSelect={(id) => setSelectedId(id)} onClose={() => setSelectedId(null)} onRemove={removeThreat} onEdit={editThreat}
+                onSelect={(id) => setSelectedId(id)} onClose={() => setSelectedId(null)} onRemove={removeThreat} onEdit={editThreat} onOpenDetail={openDetail}
               />
             )}
           </div>
